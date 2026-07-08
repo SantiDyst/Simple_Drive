@@ -19,6 +19,7 @@
 
     <section class="toolbar">
       <button class="btn btn-primary" id="btn-new-folder">Nueva carpeta</button>
+      <button class="btn btn-secondary" id="btn-group-by" aria-pressed="false">Agrupar</button>
       <div class="toolbar__sort">
         <label>Ordenar por:</label>
         <select id="sort-key">
@@ -50,8 +51,22 @@
     </footer>
   </div>
 
-  <div id="context-menu" class="context-menu hidden"></div>
+<div id="context-menu" class="context-menu hidden"></div>
 
-  <script src="app.js"></script>
+    <dialog id="modal-new-folder" class="modal">
+      <form method="dialog" class="modal__form">
+        <h2 class="modal__title">Nueva carpeta</h2>
+        <p class="modal__hint">Elegí un nombre para la nueva carpeta.</p>
+        <input type="text" id="modal-new-folder__input" class="modal__input" autocomplete="off" maxlength="100" />
+        <div id="modal-new-folder__error" class="modal__error hidden"></div>
+        <div class="modal__actions">
+          <button type="button" id="modal-new-folder__cancel" class="btn btn-secondary">Cancelar</button>
+          <button type="submit" id="modal-new-folder__confirm" class="btn btn-primary">Crear</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="vendor/fuse.min.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

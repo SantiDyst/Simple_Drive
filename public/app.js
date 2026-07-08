@@ -10,13 +10,74 @@
     selected: null,
     sortKey: 'name',
     sortDir: 'asc',
-    search: ''
+    search: '',
+    groupBy: false,
+    collapsedGroups: new Set(),
+    fuse: null,
+    fuseIndexBuiltFor: null,
+    searchDebounceTimer: null
   };
+
+  const EXTENSION_TYPE_MAP = {
+    pdf: 'doc', doc: 'doc', docx: 'doc', txt: 'doc', rtf: 'doc', odt: 'doc', md: 'doc',
+    xls: 'sheet', xlsx: 'sheet', csv: 'sheet', ods: 'sheet',
+    ppt: 'slides', pptx: 'slides', odp: 'slides',
+    png: 'image', jpg: 'image', jpeg: 'image', gif: 'image', bmp: 'image', svg: 'image', webp: 'image', ico: 'image',
+    mp4: 'video', avi: 'video', mkv: 'video', mov: 'video', webm: 'video', wmv: 'video', flv: 'video',
+    mp3: 'audio', wav: 'audio', ogg: 'audio', flac: 'audio', m4a: 'audio', aac: 'audio', wma: 'audio',
+    zip: 'archive', rar: 'archive', '7z': 'archive', tar: 'archive', gz: 'archive', bz2: 'archive', xz: 'archive',
+    js: 'code', ts: 'code', jsx: 'code', tsx: 'code', py: 'code', java: 'code', c: 'code', cpp: 'code', h: 'code',
+    html: 'code', css: 'code', json: 'code', xml: 'code', yml: 'code', yaml: 'code', sh: 'code', bash: 'code',
+    sql: 'code', php: 'code', rb: 'code', go: 'code', rs: 'code', swift: 'code', kt: 'code'
+  };
+
+  const TYPE_META = {
+    doc:     { icon: '\u{1F4C4}', label: 'Documento' },
+    sheet:   { icon: '\u{1F4CA}', label: 'Hoja de cálculo' },
+    slides:  { icon: '\u{1F4FD}', label: 'Presentación' },
+    image:   { icon: '\u{1F5BC}', label: 'Imagen' },
+    video:   { icon: '\u{1F3AC}', label: 'Video' },
+    audio:   { icon: '\u{1F3B5}', label: 'Audio' },
+    archive: { icon: '\u{1F4E6}', label: 'Comprimido' },
+    code:    { icon: '\u{1F4BB}', label: 'Código' },
+    other:   { icon: '\u{1F4C4}', label: 'Archivo' }
+  };
+
+  function getFileType(item) {
+    if (item.isDir) return 'folder';
+    if (!item.ext) return 'other';
+    return EXTENSION_TYPE_MAP[item.ext.toLowerCase()] || 'other';
+  }
+
+  function groupBy(items, keyFn) {
+    const groups = new Map();
+    for (const item of items) {
+      const key = keyFn(item);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(item);
+    }
+    const sortedKeys = Array.from(groups.keys()).sort((a, b) => {
+      if (a === '(carpetas)') return -1;
+      if (b === '(carpetas)') return 1;
+      return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+    });
+    const result = [];
+    for (const key of sortedKeys) {
+      result.push({ key, items: groups.get(key) });
+    }
+    return result;
+  }
+
+  function getGroupKey(item) {
+    if (item.isDir) return '(carpetas)';
+    return (item.ext || 'sin extensión').toLowerCase();
+  }
 
   const els = {
     breadcrumb: document.getElementById('breadcrumb'),
     back: document.getElementById('btn-back'),
     newFolder: document.getElementById('btn-new-folder'),
+    groupBy: document.getElementById('btn-group-by'),
     sortKey: document.getElementById('sort-key'),
     sortDir: document.getElementById('sort-dir'),
     search: document.getElementById('search'),
@@ -100,12 +161,22 @@
   }
 
   function applyFilter() {
-    const q = state.search.trim().toLowerCase();
+    const q = state.search.trim();
     if (!q) {
       state.filtered = state.items;
-    } else {
-      state.filtered = state.items.filter(item => item.name.toLowerCase().includes(q));
+      return;
     }
+    if (!state.fuse || state.fuseIndexBuiltFor !== state.items) {
+      state.fuse = new window.Fuse(state.items, {
+        keys: ['name'],
+        threshold: 0.4,
+        ignoreLocation: true,
+        includeScore: false
+      });
+      state.fuseIndexBuiltFor = state.items;
+    }
+    const results = state.fuse.search(q);
+    state.filtered = results.map(r => r.item);
   }
 
   function renderBreadcrumb() {
@@ -203,99 +274,154 @@
       els.emptyState.classList.add('hidden');
     }
 
-    sorted.forEach(item => {
-      const row = document.createElement('div');
-      row.className = 'file-row' + (item.isDir ? ' file-row--folder' : '');
-      row.draggable = true;
-      row.dataset.path = item.path;
-
-      const nameCell = document.createElement('div');
-      nameCell.className = 'file-row__name';
-      const icon = document.createElement('span');
-      icon.className = 'file-row__icon';
-      icon.textContent = item.isDir ? '▸' : (item.ext ? item.ext.charAt(0).toUpperCase() : '·');
-      const nameText = document.createElement('span');
-      nameText.className = 'file-row__name-text';
-      nameText.textContent = item.name;
-      nameCell.appendChild(icon);
-      nameCell.appendChild(nameText);
-      row.appendChild(nameCell);
-
-      const extCell = document.createElement('div');
-      extCell.className = 'file-row__ext';
-      extCell.textContent = item.isDir ? 'Carpeta' : (item.ext || '—');
-      row.appendChild(extCell);
-
-      const sizeCell = document.createElement('div');
-      sizeCell.className = 'file-row__size';
-      sizeCell.textContent = item.isDir ? '' : formatSize(item.size);
-      row.appendChild(sizeCell);
-
-      const mtimeCell = document.createElement('div');
-      mtimeCell.className = 'file-row__mtime';
-      mtimeCell.title = new Date(item.mtime).toLocaleString();
-      mtimeCell.textContent = formatDate(item.mtime);
-      row.appendChild(mtimeCell);
-
-      const actionsCell = document.createElement('div');
-      actionsCell.className = 'file-row__actions';
-      const copyBtn = document.createElement('button');
-      copyBtn.className = 'icon-btn';
-      copyBtn.title = 'Copiar ruta';
-      copyBtn.textContent = '⎘';
-      copyBtn.onclick = (e) => { e.stopPropagation(); copyPath(item); };
-      actionsCell.appendChild(copyBtn);
-      const trashBtn = document.createElement('button');
-      trashBtn.className = 'icon-btn icon-btn--danger';
-      trashBtn.title = 'Mover a papelera';
-      trashBtn.textContent = '×';
-      trashBtn.onclick = (e) => { e.stopPropagation(); deleteItem(item); };
-      actionsCell.appendChild(trashBtn);
-      row.appendChild(actionsCell);
-
-      row.addEventListener('dblclick', () => {
-        if (item.isDir) navigate(item.path);
-        else window.driveman.fs.openFile(item.path).catch(err => toast(err.message, 'error'));
-      });
-      row.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        showContextMenu(e.clientX, e.clientY, item);
-      });
-      row.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/plain', item.path);
-        e.dataTransfer.effectAllowed = 'move';
-        row.classList.add('file-row--dragging');
-      });
-      row.addEventListener('dragend', () => row.classList.remove('file-row--dragging'));
-      row.addEventListener('dragover', (e) => {
-        if (!item.isDir) return;
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        row.classList.add('file-row--drag-over');
-      });
-      row.addEventListener('dragleave', () => row.classList.remove('file-row--drag-over'));
-      row.addEventListener('drop', async (e) => {
-        e.preventDefault();
-        row.classList.remove('file-row--drag-over');
-        const src = e.dataTransfer.getData('text/plain');
-        if (!src || !item.isDir || src === item.path) return;
-        const srcName = src.split(/[\\/]/).pop();
-        const dst = joinPath(item.path, srcName);
-        try {
-          await window.driveman.fs.move(src, dst);
-          toast('Movido: ' + srcName, 'success');
-          await loadCurrent();
-        } catch (err) {
-          toast('Error al mover: ' + err.message, 'error');
-          await loadCurrent();
-        }
-      });
-
-      els.fileList.appendChild(row);
-    });
+    if (state.groupBy) {
+      renderGrouped(sorted);
+    } else {
+      renderFlat(sorted);
+    }
 
     els.statusCount.textContent = sorted.length + ' elemento' + (sorted.length === 1 ? '' : 's');
     els.statusPath.textContent = state.currentDir || '';
+  }
+
+  function renderFlat(sorted) {
+    sorted.forEach(item => appendRow(item));
+  }
+
+  function renderGrouped(sorted) {
+    const groups = groupBy(sorted, getGroupKey);
+    for (const group of groups) {
+      const isCollapsed = state.collapsedGroups.has(group.key);
+      const groupHeader = document.createElement('div');
+      groupHeader.className = 'group-header' + (isCollapsed ? ' group-header--collapsed' : '');
+      groupHeader.dataset.group = group.key;
+      const arrow = document.createElement('span');
+      arrow.className = 'group-header__arrow';
+      arrow.textContent = isCollapsed ? '▸' : '▾';
+      const label = document.createElement('span');
+      label.className = 'group-header__label';
+      label.textContent = group.key + ' (' + group.items.length + ')';
+      groupHeader.appendChild(arrow);
+      groupHeader.appendChild(label);
+      groupHeader.onclick = () => {
+        if (state.collapsedGroups.has(group.key)) {
+          state.collapsedGroups.delete(group.key);
+        } else {
+          state.collapsedGroups.add(group.key);
+        }
+        renderFileList();
+      };
+      els.fileList.appendChild(groupHeader);
+
+      if (!isCollapsed) {
+        for (const item of group.items) {
+          appendRow(item, group.key);
+        }
+      }
+    }
+  }
+
+  function appendRow(item) {
+    const row = document.createElement('div');
+    const fileType = getFileType(item);
+    row.className = 'file-row file-row--' + fileType + (item.isDir ? ' file-row--folder' : '');
+    row.draggable = true;
+    row.dataset.path = item.path;
+    row.dataset.type = fileType;
+
+    const nameCell = document.createElement('div');
+    nameCell.className = 'file-row__name';
+    const icon = document.createElement('span');
+    icon.className = 'file-row__icon';
+    icon.textContent = item.isDir ? '\u{1F4C1}' : (TYPE_META[fileType] ? TYPE_META[fileType].icon : TYPE_META.other.icon);
+    icon.title = item.isDir ? 'Carpeta' : (TYPE_META[fileType] ? TYPE_META[fileType].label : TYPE_META.other.label);
+    const nameText = document.createElement('span');
+    nameText.className = 'file-row__name-text';
+    nameText.textContent = item.name;
+    nameCell.appendChild(icon);
+    nameCell.appendChild(nameText);
+    row.appendChild(nameCell);
+
+    const extCell = document.createElement('div');
+    extCell.className = 'file-row__ext';
+    extCell.textContent = item.isDir ? 'Carpeta' : (item.ext || '—');
+    row.appendChild(extCell);
+
+    const sizeCell = document.createElement('div');
+    sizeCell.className = 'file-row__size';
+    sizeCell.textContent = item.isDir ? '' : formatSize(item.size);
+    row.appendChild(sizeCell);
+
+    const mtimeCell = document.createElement('div');
+    mtimeCell.className = 'file-row__mtime';
+    mtimeCell.title = new Date(item.mtime).toLocaleString();
+    mtimeCell.textContent = formatDate(item.mtime);
+    row.appendChild(mtimeCell);
+
+    const actionsCell = document.createElement('div');
+    actionsCell.className = 'file-row__actions';
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'icon-btn';
+    copyBtn.title = 'Copiar ruta';
+    copyBtn.textContent = '⎘';
+    copyBtn.onclick = (e) => { e.stopPropagation(); copyPath(item); };
+    actionsCell.appendChild(copyBtn);
+    const trashBtn = document.createElement('button');
+    trashBtn.className = 'icon-btn icon-btn--danger';
+    trashBtn.title = 'Mover a papelera';
+    trashBtn.textContent = '×';
+    trashBtn.onclick = (e) => { e.stopPropagation(); deleteItem(item); };
+    actionsCell.appendChild(trashBtn);
+    row.appendChild(actionsCell);
+
+    row.addEventListener('click', (e) => {
+      if (e.target.closest('.icon-btn')) return;
+      state.selected = item;
+      document.querySelectorAll('.file-row--selected').forEach(el => el.classList.remove('file-row--selected'));
+      row.classList.add('file-row--selected');
+    });
+    row.addEventListener('dblclick', () => {
+      if (item.isDir) navigate(item.path);
+      else window.driveman.fs.openFile(item.path).catch(err => toast(err.message, 'error'));
+    });
+    row.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      state.selected = item;
+      document.querySelectorAll('.file-row--selected').forEach(el => el.classList.remove('file-row--selected'));
+      row.classList.add('file-row--selected');
+      showContextMenu(e.clientX, e.clientY, item);
+    });
+    row.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', item.path);
+      e.dataTransfer.effectAllowed = 'move';
+      row.classList.add('file-row--dragging');
+    });
+    row.addEventListener('dragend', () => row.classList.remove('file-row--dragging'));
+    row.addEventListener('dragover', (e) => {
+      if (!item.isDir) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      row.classList.add('file-row--drag-over');
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('file-row--drag-over'));
+    row.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      row.classList.remove('file-row--drag-over');
+      const src = e.dataTransfer.getData('text/plain');
+      if (!src || !item.isDir || src === item.path) return;
+      const srcName = src.split(/[\\/]/).pop();
+      const dst = joinPath(item.path, srcName);
+      try {
+        await window.driveman.fs.move(src, dst);
+        toast('Movido: ' + srcName, 'success');
+        await loadCurrent();
+      } catch (err) {
+        toast('Error al mover: ' + err.message, 'error');
+        await loadCurrent();
+      }
+    });
+
+    els.fileList.appendChild(row);
   }
 
   function joinPath(a, b) {
@@ -332,14 +458,88 @@
     }
     try {
       state.items = await window.driveman.fs.listDir(state.currentDir);
+      state.fuse = null;
+      state.fuseIndexBuiltFor = null;
       renderBreadcrumb();
       renderFileList();
       window.driveman.fs.watch(state.currentDir).catch(() => {});
     } catch (err) {
       state.items = [];
+      state.fuse = null;
+      state.fuseIndexBuiltFor = null;
       renderBreadcrumb();
       renderFileList();
       setError(err.message);
+    }
+  }
+
+  function handleGlobalKeydown(e) {
+    const target = e.target;
+    const isTyping = target && (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.isContentEditable
+    );
+
+    if (e.key === 'Escape') {
+      if (els.search.value) {
+        els.search.value = '';
+        state.search = '';
+        renderFileList();
+        e.preventDefault();
+        return;
+      }
+      if (state.selected) {
+        hideContextMenu();
+        e.preventDefault();
+        return;
+      }
+      return;
+    }
+
+    if (e.altKey && e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goBack();
+      return;
+    }
+
+    if (e.key === 'F2') {
+      let target = state.selected;
+      if (!target && els.fileList) {
+        const selectedRow = els.fileList.querySelector('.file-row--selected');
+        if (selectedRow && selectedRow.dataset.path) {
+          target = { path: selectedRow.dataset.path, name: selectedRow.querySelector('.file-row__name-text')?.textContent || '' };
+        }
+      }
+      if (target) {
+        e.preventDefault();
+        startRename(target);
+        return;
+      }
+    }
+
+    if (e.key === 'Delete' || e.key === 'Del') {
+      if (state.selected && !isTyping) {
+        e.preventDefault();
+        deleteItem(state.selected);
+        hideContextMenu();
+        return;
+      }
+    }
+
+    if (isTyping) return;
+
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+      e.preventDefault();
+      createFolder();
+      return;
+    }
+
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'l') {
+      e.preventDefault();
+      els.search.focus();
+      els.search.select();
+      return;
     }
   }
 
@@ -405,7 +605,17 @@
   }
 
   function startRename(item) {
-    const row = els.fileList.querySelector('[data-path="' + cssEscape(item.path) + '"]');
+    let row = els.fileList.querySelector('.file-row--selected');
+    if (!row) {
+      const rows = els.fileList.querySelectorAll('.file-row');
+      for (const r of rows) {
+        if (r.dataset.path === item.path) {
+          row = r;
+          row.classList.add('file-row--selected');
+          break;
+        }
+      }
+    }
     if (!row) return;
     const nameText = row.querySelector('.file-row__name-text');
     if (!nameText) return;
@@ -451,9 +661,9 @@
 
   async function createFolder() {
     if (!state.currentDir) return;
-    const name = prompt('Nombre de la nueva carpeta:');
+    const name = await openNewFolderModal();
     if (!name) return;
-    const folderPath = joinPath(state.currentDir, name.trim());
+    const folderPath = joinPath(state.currentDir, name);
     try {
       await window.driveman.fs.createFolder(folderPath);
       toast('Carpeta creada: ' + name, 'success');
@@ -463,9 +673,70 @@
     }
   }
 
+  function openNewFolderModal() {
+    return new Promise((resolve) => {
+      const dialog = document.getElementById('modal-new-folder');
+      const input = document.getElementById('modal-new-folder__input');
+      const cancelBtn = document.getElementById('modal-new-folder__cancel');
+      const errorEl = document.getElementById('modal-new-folder__error');
+
+      input.value = '';
+      errorEl.classList.add('hidden');
+      errorEl.textContent = '';
+
+      const close = (value) => {
+        cancelBtn.removeEventListener('click', onCancel);
+        dialog.removeEventListener('close', onClose);
+        input.removeEventListener('keydown', onKeydown);
+        if (dialog.open) dialog.close();
+        resolve(value);
+      };
+
+      const onCancel = () => close(null);
+      const onClose = () => {
+        if (dialog.returnValue === 'cancel') close(null);
+      };
+      const onKeydown = (e) => {
+        if (e.key === 'Escape') { e.preventDefault(); close(null); }
+      };
+
+      cancelBtn.addEventListener('click', onCancel);
+      dialog.addEventListener('close', onClose);
+      input.addEventListener('keydown', onKeydown);
+
+      dialog.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = input.value.trim();
+        if (!name) {
+          errorEl.textContent = 'El nombre no puede estar vacío';
+          errorEl.classList.remove('hidden');
+          input.focus();
+          return;
+        }
+        if (/[\\/:*?"<>|]/.test(name)) {
+          errorEl.textContent = 'El nombre contiene caracteres no válidos';
+          errorEl.classList.remove('hidden');
+          input.focus();
+          return;
+        }
+        close(name);
+      }, { once: false });
+
+      dialog.showModal();
+      input.focus();
+    });
+  }
+
   function bindEvents() {
     els.back.onclick = goBack;
     els.newFolder.onclick = createFolder;
+    els.groupBy.onclick = () => {
+      state.groupBy = !state.groupBy;
+      state.collapsedGroups = new Set();
+      els.groupBy.setAttribute('aria-pressed', String(state.groupBy));
+      els.groupBy.classList.toggle('btn--active', state.groupBy);
+      renderFileList();
+    };
     els.sortKey.onchange = () => {
       state.sortKey = els.sortKey.value;
       renderFileList();
@@ -477,14 +748,13 @@
     };
     els.search.oninput = () => {
       state.search = els.search.value;
-      renderFileList();
+      clearTimeout(state.searchDebounceTimer);
+      state.searchDebounceTimer = setTimeout(renderFileList, 120);
     };
     document.addEventListener('click', (e) => {
       if (!els.contextMenu.contains(e.target)) hideContextMenu();
     });
-    document.addEventListener('keydown', (e) => {
-      if (e.altKey && e.key === 'ArrowLeft') { e.preventDefault(); goBack(); }
-    });
+    document.addEventListener('keydown', handleGlobalKeydown);
     if (window.driveman.fs && window.driveman.fs.onChanged) {
       window.driveman.fs.onChanged(async () => {
         if (state.currentDir) {

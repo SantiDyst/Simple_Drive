@@ -20,6 +20,12 @@ Si no se cuenta con Google Drive Desktop, la aplicación abre una pantalla de bi
 
 ---
 
+## Documentación adicional
+
+- [`ARCHITECTURE.md`](./ARCHITECTURE.md) — Por qué la app está dividida en dos procesos (main + renderer), qué problema de seguridad resuelve la capa IPC, y por qué no existe "comunicación nativa directa" con Windows.
+
+---
+
 ## Quickstart (post `git clone`)
 
 ```bash

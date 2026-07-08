@@ -15,3 +15,10 @@ PROMPT.md
 
 # Binarios pesados del wrapper 7za (descargables por separado)
 tools/7za-wrapper/*.exe
+
+# Test artifacts (regenerables, no necesitan versionarse)
+playwright-report/
+test-results/
+test-results.json
+playwright/.cache/
+tests/.runs/run-*.md

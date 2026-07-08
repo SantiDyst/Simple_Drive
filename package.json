@@ -7,11 +7,22 @@
     "start": "electron .",
     "dev": "electron . --dev",
     "build": "electron-builder --win",
-    "build:portable": "electron-builder --win portable"
+    "build:portable": "electron-builder --win portable",
+    "test": "playwright test --config=tests/playwright.config.cjs",
+    "test:smoke": "playwright test --config=tests/playwright.config.cjs smoke.spec.cjs",
+    "test:flows": "playwright test --config=tests/playwright.config.cjs flows.spec.cjs",
+    "test:events": "playwright test --config=tests/playwright.config.cjs events.spec.cjs",
+    "test:errors": "playwright test --config=tests/playwright.config.cjs errors.spec.cjs",
+    "test:report": "playwright show-report playwright-report",
+    "test:log": "node tests/helpers/run-logger.cjs",
+    "test:full": "npm run test:log",
+    "agent:run": "node agents/test-runner.cjs"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "electron": "^35.7.5",
-    "electron-builder": "^25.0.0"
+    "electron-builder": "^25.0.0",
+    "playwright": "^1.61.1"
   },
   "engines": {
     "node": ">=22"
@@ -52,5 +63,8 @@
   },
   "allowScripts": {
     "electron@35.7.5": true
+  },
+  "dependencies": {
+    "fuse.js": "^6.4.6"
   }
 }
