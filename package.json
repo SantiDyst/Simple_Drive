@@ -1,0 +1,56 @@
+{
+  "name": "driveman-desktop",
+  "version": "0.1.0",
+  "description": "Explorador local de Google Drive Desktop para Windows",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder --win",
+    "build:portable": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^35.7.5",
+    "electron-builder": "^25.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "build": {
+    "appId": "com.driveman.app",
+    "productName": "Driveman",
+    "files": [
+      "electron/**/*",
+      "public/**/*",
+      "renderer/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Driveman"
+    }
+  },
+  "allowScripts": {
+    "electron@35.7.5": true
+  }
+}

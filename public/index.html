@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+  <title>Driveman</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <h1 class="header__title">Driveman</h1>
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Ruta actual"></nav>
+      <div class="header__actions">
+        <button class="btn btn-secondary" id="btn-back" title="Atrás (Alt+Left)">← Atrás</button>
+      </div>
+    </header>
+
+    <section class="toolbar">
+      <button class="btn btn-primary" id="btn-new-folder">Nueva carpeta</button>
+      <div class="toolbar__sort">
+        <label>Ordenar por:</label>
+        <select id="sort-key">
+          <option value="name">Nombre</option>
+          <option value="ext">Extensión</option>
+          <option value="size">Tamaño</option>
+          <option value="mtime">Modificado</option>
+        </select>
+        <button class="btn btn-secondary btn-sort-direction" id="sort-dir" title="Cambiar dirección">↓</button>
+      </div>
+      <input class="search" id="search" type="text" placeholder="Filtrar…" autocomplete="off">
+    </section>
+
+    <main id="explorer">
+      <div id="welcome" class="welcome hidden">
+        <h2>No se detectó Google Drive Desktop</h2>
+        <p>Para usar Driveman necesitás tener Google Drive Desktop instalado y sincronizando.</p>
+        <p>Instalalo desde <a href="#" id="download-link">drive.google.com/drive/download</a> y volvé a abrir la app.</p>
+        <p class="muted">Mientras tanto, podés configurar la ruta manualmente desde el menú de la bandeja.</p>
+      </div>
+      <div id="file-list" class="file-list"></div>
+      <div id="empty-state" class="empty-state hidden">Esta carpeta está vacía.</div>
+      <div id="error-state" class="error-state hidden"></div>
+    </main>
+
+    <footer class="statusbar">
+      <span id="status-count">0 elementos</span>
+      <span id="status-path" class="muted"></span>
+    </footer>
+  </div>
+
+  <div id="context-menu" class="context-menu hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

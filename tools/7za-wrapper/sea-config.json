@@ -1,0 +1,1 @@
+{ "main": "wrapper.js", "output": "7za.exe", "disableExperimentalSEAWarning": true }

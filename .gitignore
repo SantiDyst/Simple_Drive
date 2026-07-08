@@ -1,0 +1,17 @@
+node_modules/
+dist/
+out/
+*.log
+.DS_Store
+Thumbs.db
+.env
+credentials.json
+driveman.db
+*.db
+
+# Orquestador local (cache opencode / SDD)
+.atl/
+PROMPT.md
+
+# Binarios pesados del wrapper 7za (descargables por separado)
+tools/7za-wrapper/*.exe
