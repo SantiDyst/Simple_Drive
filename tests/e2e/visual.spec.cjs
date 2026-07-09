@@ -49,14 +49,14 @@ test('visual — cada tipo de archivo recibe su clase CSS data-type', async () =
       typeByFile[name] = type;
     }
 
-    expect(typeByFile['reporte.pdf']).toBe('doc');
-    expect(typeByFile['presupuesto.xlsx']).toBe('sheet');
-    expect(typeByFile['foto.png']).toBe('image');
-    expect(typeByFile['intro.mp4']).toBe('video');
-    expect(typeByFile['tema.mp3']).toBe('audio');
-    expect(typeByFile['paquete.zip']).toBe('archive');
-    expect(typeByFile['app.js']).toBe('code');
-    expect(typeByFile['notas.xyz']).toBe('other');
+    expect(typeByFile['reporte.pdf']).toBe('docs');
+    expect(typeByFile['presupuesto.xlsx']).toBe('office');
+    expect(typeByFile['foto.png']).toBe('media');
+    expect(typeByFile['intro.mp4']).toBe('media');
+    expect(typeByFile['tema.mp3']).toBe('media');
+    expect(typeByFile['paquete.zip']).toBe('binary');
+    expect(typeByFile['app.js']).toBe('sensitive');
+    expect(typeByFile['notas.xyz']).toBe('default');
 
     await window.screenshot({ path: path.join(SCREENSHOTS_DIR, '03-visual-types.png'), fullPage: true });
   } finally {

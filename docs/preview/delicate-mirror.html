@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Driveman — Preview: Jerarquía de borders</title>
+  <link rel="stylesheet" href="../../public/dist/styles.css">
+  <style>
+    body { overflow: auto; }
+
+    .preview-banner {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: #fef3c7;
+      border-bottom: 2px solid #f59e0b;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+      color: #78350f;
+      font-family: system-ui, sans-serif;
+    }
+
+    .dark .preview-banner {
+      background: #422006;
+      border-bottom-color: #d97706;
+      color: #fef3c7;
+    }
+
+    .preview-banner strong { font-weight: 600; }
+    .preview-banner button {
+      margin-left: auto;
+      padding: 4px 12px;
+      border: 1px solid currentColor;
+      border-radius: 9999px;
+      background: transparent;
+      color: inherit;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .preview-banner button:hover { background: rgba(0,0,0,0.05); }
+    .dark .preview-banner button:hover { background: rgba(255,255,255,0.05); }
+
+    /* ============================================================
+     * ESTILO PROPUESTO — JERARQUÍA DE 6 NIVELES
+     * ============================================================
+     * Mover a components.css si te gusta el resultado.
+     * Cada nivel hereda los defaults de .file-row[data-type]
+     * pero redefine el border-left-color según la jerarquía.
+     * ============================================================ */
+
+    .file-row[data-type='sensitive'] { border-left-color: #dc2626; }  /* rojo */
+    .file-row[data-type='binary']    { border-left-color: #f97316; }  /* naranja */
+    .file-row[data-type='office']    { border-left-color: #a16207; }  /* marrón */
+    .file-row[data-type='docs']      { border-left-color: #eab308; }  /* amarillo */
+    .file-row[data-type='media']     { border-left-color: #3b82f6; }  /* celeste */
+    .file-row[data-type='default']   { border-left-color: #94a3b8; }  /* gris */
+    .file-row[data-type='folder']    { border-left-color: #94a3b8; }  /* gris (mismo que default) */
+
+    .dark .file-row[data-type='sensitive'] { border-left-color: #f87171; }
+    .dark .file-row[data-type='binary']    { border-left-color: #fb923c; }
+    .dark .file-row[data-type='office']    { border-left-color: #ca8a04; }
+    .dark .file-row[data-type='docs']      { border-left-color: #facc15; }
+    .dark .file-row[data-type='media']     { border-left-color: #60a5fa; }
+    .dark .file-row[data-type='default']   { border-left-color: #64748b; }
+    .dark .file-row[data-type='folder']    { border-left-color: #64748b; }
+
+    .preview-section-title {
+      padding: 12px 16px 4px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .preview-section-title .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .preview-controls {
+      padding: 12px 16px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      border-bottom: 1px solid var(--color-hairline);
+      background: var(--color-surface);
+    }
+
+    .preview-controls label { display: flex; align-items: center; gap: 6px; }
+    .preview-controls input[type="color"] { width: 24px; height: 20px; border: 1px solid var(--color-hairline); border-radius: 4px; cursor: pointer; padding: 0; }
+    .preview-controls input[type="range"] { width: 80px; }
+    .preview-controls .value { font-family: monospace; color: var(--color-text); }
+  </style>
+</head>
+<body class="bg-bg text-text">
+
+<div class="preview-banner">
+  <span>⚠ <strong>PREVIEW</strong> — Jerarquía de 6 niveles para borders. No es la app real.</span>
+  <button id="toggle-theme">Cambiar tema</button>
+</div>
+
+<div class="preview-controls">
+  <label>Border: <input type="range" id="border-width" min="1" max="6" value="4"> <span class="value" id="border-width-val">4px</span></label>
+</div>
+
+<div id="app">
+  <header class="header">
+    <h1 class="header__title">Driveman</h1>
+    <nav class="breadcrumb"><span class="breadcrumb__current">Mi unidad</span></nav>
+    <div class="header__actions">
+      <button class="btn btn-secondary" id="btn-back">← Atrás</button>
+    </div>
+  </header>
+
+  <main id="explorer">
+    <div class="file-list">
+
+      <div class="preview-section-title"><span class="dot" style="background:#dc2626"></span> Sensitive — sistemas / delicado (rojo)</div>
+
+      <div class="file-row" data-type="sensitive">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">package.json</span>
+        </div>
+        <div class="file-row__ext">json</div>
+        <div class="file-row__size">2 KB</div>
+        <div class="file-row__mtime">hoy</div>
+      </div>
+
+      <div class="file-row" data-type="sensitive">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">.env</span>
+        </div>
+        <div class="file-row__ext">env</div>
+        <div class="file-row__size">512 B</div>
+        <div class="file-row__mtime">hace 1 mes</div>
+      </div>
+
+      <div class="file-row" data-type="sensitive">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">app.js</span>
+        </div>
+        <div class="file-row__ext">js</div>
+        <div class="file-row__size">14 KB</div>
+        <div class="file-row__mtime">hoy</div>
+      </div>
+
+      <div class="file-row" data-type="sensitive">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">database.db</span>
+        </div>
+        <div class="file-row__ext">db</div>
+        <div class="file-row__size">8.4 MB</div>
+        <div class="file-row__mtime">hoy</div>
+      </div>
+
+      <div class="file-row" data-type="sensitive">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">docker-compose.yml</span>
+        </div>
+        <div class="file-row__ext">yml</div>
+        <div class="file-row__size">3 KB</div>
+        <div class="file-row__mtime">hace 2 sem</div>
+      </div>
+
+      <div class="preview-section-title"><span class="dot" style="background:#f97316"></span> Binary — ejecutables / scripts (naranja)</div>
+
+      <div class="file-row" data-type="binary">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">install.bat</span>
+        </div>
+        <div class="file-row__ext">bat</div>
+        <div class="file-row__size">2 KB</div>
+        <div class="file-row__mtime">hace 3 sem</div>
+      </div>
+
+      <div class="file-row" data-type="binary">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">deploy.sh</span>
+        </div>
+        <div class="file-row__ext">sh</div>
+        <div class="file-row__size">1 KB</div>
+        <div class="file-row__mtime">hace 1 sem</div>
+      </div>
+
+      <div class="file-row" data-type="binary">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">setup.exe</span>
+        </div>
+        <div class="file-row__ext">exe</div>
+        <div class="file-row__size">24 MB</div>
+        <div class="file-row__mtime">hace 2 meses</div>
+      </div>
+
+      <div class="preview-section-title"><span class="dot" style="background:#a16207"></span> Office — Word, Excel, PowerPoint (marrón)</div>
+
+      <div class="file-row" data-type="office">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">reporte-final.docx</span>
+        </div>
+        <div class="file-row__ext">docx</div>
+        <div class="file-row__size">156 KB</div>
+        <div class="file-row__mtime">ayer</div>
+      </div>
+
+      <div class="file-row" data-type="office">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">presupuesto-2026.xlsx</span>
+        </div>
+        <div class="file-row__ext">xlsx</div>
+        <div class="file-row__size">48 KB</div>
+        <div class="file-row__mtime">hace 3 días</div>
+      </div>
+
+      <div class="file-row" data-type="office">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">presentacion-q4.pptx</span>
+        </div>
+        <div class="file-row__ext">pptx</div>
+        <div class="file-row__size">2.3 MB</div>
+        <div class="file-row__mtime">hace 1 sem</div>
+      </div>
+
+      <div class="preview-section-title"><span class="dot" style="background:#eab308"></span> Docs — PDFs, txt, markdown (amarillo)</div>
+
+      <div class="file-row" data-type="docs">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">manual.pdf</span>
+        </div>
+        <div class="file-row__ext">pdf</div>
+        <div class="file-row__size">1.2 MB</div>
+        <div class="file-row__mtime">hace 1 mes</div>
+      </div>
+
+      <div class="file-row" data-type="docs">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">README.md</span>
+        </div>
+        <div class="file-row__ext">md</div>
+        <div class="file-row__size">2 KB</div>
+        <div class="file-row__mtime">hoy</div>
+      </div>
+
+      <div class="file-row" data-type="docs">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">notas.txt</span>
+        </div>
+        <div class="file-row__ext">txt</div>
+        <div class="file-row__size">512 B</div>
+        <div class="file-row__mtime">ayer</div>
+      </div>
+
+      <div class="preview-section-title"><span class="dot" style="background:#3b82f6"></span> Media — imágenes, video, audio (celeste)</div>
+
+      <div class="file-row" data-type="media">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">foto-cumple.jpg</span>
+        </div>
+        <div class="file-row__ext">jpg</div>
+        <div class="file-row__size">3.1 MB</div>
+        <div class="file-row__mtime">hace 1 sem</div>
+      </div>
+
+      <div class="file-row" data-type="media">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">intro.mp4</span>
+        </div>
+        <div class="file-row__ext">mp4</div>
+        <div class="file-row__size">14 MB</div>
+        <div class="file-row__mtime">hace 2 sem</div>
+      </div>
+
+      <div class="file-row" data-type="media">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">tema.mp3</span>
+        </div>
+        <div class="file-row__ext">mp3</div>
+        <div class="file-row__size">5.2 MB</div>
+        <div class="file-row__mtime">hace 1 mes</div>
+      </div>
+
+      <div class="preview-section-title"><span class="dot" style="background:#94a3b8"></span> Default — sin clasificar (gris)</div>
+
+      <div class="file-row" data-type="default">
+        <div class="file-row__name">
+          <span class="file-row__icon"></span>
+          <span class="file-row__name-text">archivo.xyz</span>
+        </div>
+        <div class="file-row__ext">xyz</div>
+        <div class="file-row__size">12 KB</div>
+        <div class="file-row__mtime">hace 2 sem</div>
+      </div>
+
+      <div class="file-row" data-type="folder">
+        <div class="file-row__name">
+          <span class="file-row__icon">▸</span>
+          <span class="file-row__name-text">Mi proyecto</span>
+        </div>
+        <div class="file-row__ext">Carpeta</div>
+        <div class="file-row__size"></div>
+        <div class="file-row__mtime">hoy</div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="statusbar">
+    <span id="status-count">20 elementos</span>
+    <span class="muted">preview</span>
+  </footer>
+</div>
+
+<script>
+  document.getElementById('toggle-theme').addEventListener('click', () => {
+    document.documentElement.classList.toggle('dark');
+  });
+
+  const $border = document.getElementById('border-width');
+
+  function applyPreview() {
+    const borderWidth = $border.value + 'px';
+    document.getElementById('border-width-val').textContent = borderWidth;
+
+    let style = document.getElementById('preview-style') || document.createElement('style');
+    style.id = 'preview-style';
+    style.textContent = `
+      .file-row[data-type] { border-left-style: solid; border-left-width: ${borderWidth}; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  $border.addEventListener('input', applyPreview);
+  applyPreview();
+</script>
+
+</body>
+</html>

@@ -58,17 +58,20 @@
   --color-danger: #d45656;
   --color-warning: #e5c07b;
 
-  /* ----- Type colors (light) — encoding por tipo de archivo ----- */
-  --color-type-doc: #94a3b8;
-  --color-type-sheet: #22c55e;
-  --color-type-slides: #eab308;
-  --color-type-image: #f97316;
-  --color-type-video: #ef4444;
-  --color-type-audio: #a855f7;
-  --color-type-archive: #facc15;
-  --color-type-code: #60a5fa;
-  --color-type-other: #94a3b8;
-  --color-type-folder: #1456f0;
+  /* ----- Type colors (light) — jerarquía de 6 niveles por importancia -----
+   * 1 = sensitive (sistemas/delicate) → rojo
+   * 2 = binary    (ejecutables)       → naranja
+   * 3 = office    (Word/Excel/PowerPoint) → marrón
+   * 4 = docs      (PDFs, txt, md)     → amarillo
+   * 5 = media     (imagen/video/audio) → celeste
+   * 6 = default   (sin clasificar)    → gris
+   */
+  --color-type-sensitive: #dc2626;
+  --color-type-binary:    #f97316;
+  --color-type-office:    #a16207;
+  --color-type-docs:      #eab308;
+  --color-type-media:     #3b82f6;
+  --color-type-default:   #94a3b8;
 
   /* ----- Aliases semánticos que el HTML y Tailwind ya esperan -----
    * bg-bg, text-text, border-border, etc. vienen de acá.
@@ -115,16 +118,12 @@
   --color-warning: #fbbf24;
 
   /* Type colors: versiones más claras para contraste en dark */
-  --color-type-doc: #64748b;
-  --color-type-sheet: #4ade80;
-  --color-type-slides: #facc15;
-  --color-type-image: #fb923c;
-  --color-type-video: #f87171;
-  --color-type-audio: #c084fc;
-  --color-type-archive: #fde047;
-  --color-type-code: #93c5fd;
-  --color-type-other: #64748b;
-  --color-type-folder: #60a5fa;
+  --color-type-sensitive: #f87171;
+  --color-type-binary:    #fb923c;
+  --color-type-office:    #ca8a04;
+  --color-type-docs:      #facc15;
+  --color-type-media:     #60a5fa;
+  --color-type-default:   #64748b;
 
   /* Aliases */
   --color-bg: var(--color-canvas);

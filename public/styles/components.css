@@ -269,18 +269,16 @@
     opacity: 0.4;
   }
 
-  /* Border-l coloreado por tipo (mantenemos el patrón actual,
-   * lo único que cambia es el color que viene del theme) */
-  .file-row[data-type='doc']      { @apply border-l-4 border-l-type-doc; }
-  .file-row[data-type='sheet']    { @apply border-l-4 border-l-type-sheet; }
-  .file-row[data-type='slides']   { @apply border-l-4 border-l-type-slides; }
-  .file-row[data-type='image']    { @apply border-l-4 border-l-type-image; }
-  .file-row[data-type='video']    { @apply border-l-4 border-l-type-video; }
-  .file-row[data-type='audio']    { @apply border-l-4 border-l-type-audio; }
-  .file-row[data-type='archive']  { @apply border-l-4 border-l-type-archive; }
-  .file-row[data-type='code']     { @apply border-l-4 border-l-type-code; }
-  .file-row[data-type='other']    { @apply border-l-4 border-l-type-other; }
-  .file-row[data-type='folder']   { @apply border-l-4 border-l-type-folder pl-[13px]; }
+  /* Border-l coloreado por tipo — jerarquía de 6 niveles.
+   * 1=sensitive (rojo)  2=binary (naranja)  3=office (marrón)
+   * 4=docs (amarillo)    5=media (celeste)   6=default/folder (gris) */
+  .file-row[data-type='sensitive'] { @apply border-l-4 border-l-type-sensitive; }
+  .file-row[data-type='binary']    { @apply border-l-4 border-l-type-binary; }
+  .file-row[data-type='office']    { @apply border-l-4 border-l-type-office; }
+  .file-row[data-type='docs']      { @apply border-l-4 border-l-type-docs; }
+  .file-row[data-type='media']     { @apply border-l-4 border-l-type-media; }
+  .file-row[data-type='default']   { @apply border-l-4 border-l-type-default; }
+  .file-row[data-type='folder']    { @apply border-l-4 border-l-type-default pl-[13px]; }
 
   .file-row[data-type]:not([data-type='folder']) {
     @apply pl-[13px];

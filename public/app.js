@@ -19,34 +19,49 @@
   };
 
   const EXTENSION_TYPE_MAP = {
-    pdf: 'doc', doc: 'doc', docx: 'doc', txt: 'doc', rtf: 'doc', odt: 'doc', md: 'doc',
-    xls: 'sheet', xlsx: 'sheet', csv: 'sheet', ods: 'sheet',
-    ppt: 'slides', pptx: 'slides', odp: 'slides',
-    png: 'image', jpg: 'image', jpeg: 'image', gif: 'image', bmp: 'image', svg: 'image', webp: 'image', ico: 'image',
-    mp4: 'video', avi: 'video', mkv: 'video', mov: 'video', webm: 'video', wmv: 'video', flv: 'video',
-    mp3: 'audio', wav: 'audio', ogg: 'audio', flac: 'audio', m4a: 'audio', aac: 'audio', wma: 'audio',
-    zip: 'archive', rar: 'archive', '7z': 'archive', tar: 'archive', gz: 'archive', bz2: 'archive', xz: 'archive',
-    js: 'code', ts: 'code', jsx: 'code', tsx: 'code', py: 'code', java: 'code', c: 'code', cpp: 'code', h: 'code',
-    html: 'code', css: 'code', json: 'code', xml: 'code', yml: 'code', yaml: 'code', sh: 'code', bash: 'code',
-    sql: 'code', php: 'code', rb: 'code', go: 'code', rs: 'code', swift: 'code', kt: 'code'
+    // Sensitive — sistemas, código, configs (rojo)
+    json: 'sensitive', yml: 'sensitive', yaml: 'sensitive', toml: 'sensitive',
+    ini: 'sensitive', conf: 'sensitive', config: 'sensitive', env: 'sensitive',
+    db: 'sensitive', sqlite: 'sensitive', sqlite3: 'sensitive', mdb: 'sensitive',
+    lock: 'sensitive', log: 'sensitive', bak: 'sensitive', tmp: 'sensitive', swp: 'sensitive',
+    js: 'sensitive', jsx: 'sensitive', ts: 'sensitive', tsx: 'sensitive',
+    py: 'sensitive', java: 'sensitive', c: 'sensitive', cpp: 'sensitive', h: 'sensitive',
+    html: 'sensitive', css: 'sensitive', xml: 'sensitive', sql: 'sensitive',
+    php: 'sensitive', rb: 'sensitive', go: 'sensitive', rs: 'sensitive',
+    swift: 'sensitive', kt: 'sensitive', sh: 'sensitive', bash: 'sensitive',
+    // Binary — ejecutables/scripts/paquetes (naranja)
+    exe: 'binary', dll: 'binary', so: 'binary', bin: 'binary',
+    bat: 'binary', cmd: 'binary', ps1: 'binary', msi: 'binary',
+    zip: 'binary', rar: 'binary', '7z': 'binary',
+    tar: 'binary', gz: 'binary', bz2: 'binary', xz: 'binary',
+    // Office — Word, Excel, PowerPoint (marrón)
+    docx: 'office', xlsx: 'office', pptx: 'office',
+    doc: 'office', xls: 'office', ppt: 'office',
+    odt: 'office', ods: 'office', odp: 'office', csv: 'office', rtf: 'office',
+    // Docs — PDFs, txt, markdown (amarillo)
+    pdf: 'docs', md: 'docs', txt: 'docs',
+    // Media — imágenes, video, audio (celeste)
+    png: 'media', jpg: 'media', jpeg: 'media', gif: 'media', bmp: 'media',
+    svg: 'media', webp: 'media', ico: 'media',
+    mp4: 'media', avi: 'media', mkv: 'media', mov: 'media', webm: 'media',
+    wmv: 'media', flv: 'media',
+    mp3: 'media', wav: 'media', ogg: 'media', flac: 'media',
+    m4a: 'media', aac: 'media', wma: 'media'
   };
 
   const TYPE_META = {
-    doc:     { icon: '\u{1F4C4}', label: 'Documento' },
-    sheet:   { icon: '\u{1F4CA}', label: 'Hoja de cálculo' },
-    slides:  { icon: '\u{1F4FD}', label: 'Presentación' },
-    image:   { icon: '\u{1F5BC}', label: 'Imagen' },
-    video:   { icon: '\u{1F3AC}', label: 'Video' },
-    audio:   { icon: '\u{1F3B5}', label: 'Audio' },
-    archive: { icon: '\u{1F4E6}', label: 'Comprimido' },
-    code:    { icon: '\u{1F4BB}', label: 'Código' },
-    other:   { icon: '\u{1F4C4}', label: 'Archivo' }
+    sensitive: { icon: '⚙', label: 'Sistema' },
+    binary:    { icon: '⚡', label: 'Ejecutable' },
+    office:    { icon: '📊', label: 'Office' },
+    docs:      { icon: '📄', label: 'Documento' },
+    media:     { icon: '🎬', label: 'Media' },
+    default:   { icon: '📄', label: 'Archivo' }
   };
 
   function getFileType(item) {
     if (item.isDir) return 'folder';
-    if (!item.ext) return 'other';
-    return EXTENSION_TYPE_MAP[item.ext.toLowerCase()] || 'other';
+    if (!item.ext) return 'default';
+    return EXTENSION_TYPE_MAP[item.ext.toLowerCase()] || 'default';
   }
 
   function groupBy(items, keyFn) {
@@ -337,8 +352,8 @@
     nameCell.className = 'file-row__name';
     const icon = document.createElement('span');
     icon.className = 'file-row__icon';
-    icon.textContent = item.isDir ? '\u{1F4C1}' : (TYPE_META[fileType] ? TYPE_META[fileType].icon : TYPE_META.other.icon);
-    icon.title = item.isDir ? 'Carpeta' : (TYPE_META[fileType] ? TYPE_META[fileType].label : TYPE_META.other.label);
+    icon.textContent = item.isDir ? '\u{1F4C1}' : (TYPE_META[fileType] ? TYPE_META[fileType].icon : TYPE_META.default.icon);
+    icon.title = item.isDir ? 'Carpeta' : (TYPE_META[fileType] ? TYPE_META[fileType].label : TYPE_META.default.label);
     const nameText = document.createElement('span');
     nameText.className = 'file-row__name-text';
     nameText.textContent = item.name;
