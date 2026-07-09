@@ -453,6 +453,11 @@
     if (!dirPath) return;
     if (state.currentDir) state.history.push(state.currentDir);
     state.currentDir = dirPath;
+    // Limpiar el filtro al cambiar de directorio: cada carpeta empieza "limpia"
+    // y el usuario no se encuentra con resultados vacíos por un filtro heredado.
+    state.search = '';
+    if (els.search) els.search.value = '';
+    if (els.searchOverlayInput) els.searchOverlayInput.value = '';
     await loadCurrent();
   }
 
@@ -784,9 +789,10 @@
     els.search.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        els.search.value = '';
+        // El usuario quiere ver el filtro que aplicó. NO vaciar el input.
+        // El filtro se limpia con Escape (abajo) o al navegar a otra carpeta.
         els.search.blur();
-        toast('Filtro aplicado: ' + state.search, 'success');
+        if (state.search) toast('Filtro aplicado: ' + state.search, 'success');
       }
     });
     els.themeToggle.onclick = () => {
@@ -839,6 +845,13 @@
     els.searchOverlay.classList.add('hidden');
     els.searchOverlayInput.value = '';
     els.searchOverlayInput.blur();
+    // FIX: limpiar el filtro también del state y del input del toolbar.
+    // Antes el filtro quedaba "invisible" (els.search.value vacío pero
+    // state.search con valor), bloqueando la vista del directorio al
+    // navegar a otra carpeta.
+    state.search = '';
+    if (els.search) els.search.value = '';
+    renderFileList();
   }
 
   function initTheme() {

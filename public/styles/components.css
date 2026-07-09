@@ -235,7 +235,14 @@
     border-bottom: 0;
   }
 
-  /* ----- Explorador de Driveman (usa el patrón data-table) ----- */
+  /* ----- Explorador de Driveman (usa el patrón data-table) -----
+   * min-height: 0 es crítico en CSS Grid: sin esto, el item 1fr no puede
+   * ser más chico que su contenido y el overflow-y-auto no scrollea. */
+  #explorer {
+    @apply overflow-y-auto p-0;
+    min-height: 0;
+  }
+
   .file-list {
     @apply w-full;
   }
