@@ -1,0 +1,87 @@
+/* ============================================================
+ * TOKENS NUMÉRICOS
+ * ============================================================
+ * Spacing, radius, typography sizes. Sin colores — esos viven en
+ * el theme. Si cambiás un valor acá, se actualiza en todos lados
+ * (Tailwind utilities automáticos + var() en CSS).
+ * ============================================================ */
+
+@theme {
+  /* ----- Font stack -----
+   * DM Sans es la primary del design system; Inter es el fallback
+   * oficial. Inter ya está cargado en el sistema, así que no
+   * necesitamos @font-face todavía. Si más adelante se quiere
+   * self-host DM Sans, se agrega acá. */
+  --font-sans: 'DM Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* ----- Spacing (base-4) ----- */
+  --spacing-xxs: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 20px;
+  --spacing-xl: 24px;
+  --spacing-xxl: 32px;
+  --spacing-xxxl: 40px;
+  --spacing-section-sm: 48px;
+  --spacing-section: 64px;
+  --spacing-section-lg: 80px;
+  --spacing-hero: 96px;
+
+  /* ----- Radius (escala completa) ----- */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-xxl: 20px;
+  --radius-xxxl: 24px;
+  --radius-hero: 32px;
+  --radius-full: 9999px;
+
+  /* ----- Typography sizes ----- */
+  --font-size-hero-display: 80px;
+  --font-size-display-lg: 56px;
+  --font-size-heading-lg: 40px;
+  --font-size-heading-md: 32px;
+  --font-size-heading-sm: 24px;
+  --font-size-card-title: 20px;
+  --font-size-subtitle: 18px;
+  --font-size-body-md: 16px;
+  --font-size-body-sm: 14px;
+  --font-size-caption: 13px;
+  --font-size-micro: 12px;
+
+  /* ----- Line heights ----- */
+  --line-height-tight: 1.10;
+  --line-height-display: 1.10;
+  --line-height-heading: 1.20;
+  --line-height-heading-md: 1.25;
+  --line-height-heading-sm: 1.30;
+  --line-height-card-title: 1.40;
+  --line-height-body: 1.50;
+  --line-height-caption: 1.70;
+
+  /* ----- Letter spacings (negativos en hero/headings) ----- */
+  --letter-spacing-tight: -0.5px;
+  --letter-spacing-tighter: -1px;
+  --letter-spacing-tightest: -1.5px;
+  --letter-spacing-hero: -2px;
+  --letter-spacing-wide: 0.5px;
+
+  /* ----- Font weights (disciplina del design: 400/500/600/700) ----- */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+}
+
+/* ============================================================
+ * SOMBRAS (Elevation system)
+ * ============================================================ */
+@theme {
+  --shadow-level-1: rgba(0, 0, 0, 0.04) 0px 1px 2px 0px;
+  --shadow-level-2: rgba(0, 0, 0, 0.08) 0px 4px 6px 0px;
+  --shadow-level-3: rgba(0, 0, 0, 0.08) 0px 0px 22px 0px;
+  --shadow-level-4: rgba(36, 36, 36, 0.08) 0px 12px 16px -4px;
+}

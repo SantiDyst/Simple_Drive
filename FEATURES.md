@@ -333,154 +333,58 @@ Si querés un orden de ejecución recomendado:
 
 ---
 
-# 🗺️ Vista visual del roadmap (solo para vos)
+## Feature 6: Offline write (DEFERRED — exploración futura)
 
-> Esta sección es **para tu toma de decisiones**. El agente que ejecuta tasks NO la lee. Usala para ver de un vistazo qué hay, qué dependencias hay entre tasks, y por dónde conviene entrar.
+> **Estado:** DEFERRED. Decidido en sesión 2026-07-09 explorar más adelante. Por ahora el alcance es solo **read offline** (Feature 7).
+> Anotado también en Engram con `topic_key: driveman/offline-write-future` (persiste cross-session para el agente).
 
-## Mapa completo de features y tasks
+### Contexto
 
-```mermaid
-graph TD
-    START([Driveman hoy<br/>11/12 tests OK<br/>1 bug abierto])
+Driveman hoy es framework stateless: cada operación va a la API de Google Drive con la auth del usuario del SO. Sin internet, nada funciona. La Feature 7 (read offline) cubre el caso "ver la última lista conocida", pero el write offline (modificar archivos locales y sincronizar al reconectar) queda fuera de alcance por ahora.
 
-    F1[Feature 1<br/>🎨 Iconos y colores por tipo]
-    F2[Feature 2<br/>📁 Agrupar por extensión]
-    F3[Feature 3<br/>🔍 Búsqueda fuzzy]
-    F4[Feature 4<br/>⚡ Atajos de teclado]
-    F5[Feature 5<br/>🤖 Skill del agente]
+### Modelo conceptual (referencia para cuando se implemente)
 
-    T11[1.1 Mapeo extensión]
-    T12[1.2 Render íconos]
-    T13[1.3 Color por tipo]
-    T14[1.4 Test E2E íconos]
-
-    T21[2.1 Lógica agrupación]
-    T22[2.2 Botón toggle]
-    T23[2.3 Secciones colapsables]
-    T24[2.4 Test E2E agrupación]
-
-    T31[3.1 Integrar Fuse.js]
-    T32[3.2 Reemplazar filtrado]
-    T33[3.3 Test búsqueda fuzzy]
-
-    T41[4.1 Listener teclado]
-    T42[4.2 Atajos básicos]
-    T43[4.3 Modal nueva carpeta<br/>🔥 CIERRA BUG-001]
-
-    T51[5.1 Crear skill]
-    T52[5.2 Documentar skill]
-    T53[5.3 Auto-actualizar]
-
-    END_GOAL([Driveman pulido<br/>12/12 tests OK<br/>0 bugs abiertos])
-
-    START --> T43
-    T43 --> F1
-    F1 --> T11 --> T12 --> T13 --> T14
-    F1 --> F2
-    F2 --> T21 --> T22 --> T23 --> T24
-    F2 --> F3
-    F3 --> T31 --> T32 --> T33
-    F1 --> T41
-    F3 --> T42
-    T41 --> T42
-    T43 --> END_GOAL
-    T14 --> END_GOAL
-    T24 --> END_GOAL
-    T33 --> END_GOAL
-    T42 --> END_GOAL
-    F4 --> F5
-    F5 --> T51 --> T52 --> T53
-    T53 --> END_GOAL
-
-    classDef critical fill:#ff6b6b,stroke:#c92a2a,color:#fff
-    classDef high fill:#ffd43b,stroke:#fab005,color:#000
-    classDef medium fill:#74c0fc,stroke:#1971c2,color:#000
-    classDef low fill:#b197fc,stroke:#7048e8,color:#fff
-    classDef done fill:#51cf66,stroke:#2f9e44,color:#fff
-
-    class T43 critical
-    class T11,T12,T13,T14,T21,T22,T23,T24 high
-    class T31,T32,T33,T41,T42 medium
-    class T51,T52,T53 low
-    class START,END_GOAL done
+```
+Drive (read-only desde el framework)
+   │
+   │  1. check-out (copia a local)
+   ▼
+local_path en Desktop del usuario
+   │
+   │  2. decisión al terminar:
+   ▼
+sincronizar (upload)  │  descartar
 ```
 
-## Matriz impacto × esfuerzo (para elegir por dónde entrar)
+### Tabla `pending_mutations` (referencia)
 
-```mermaid
-quadrantChart
-    title Features: impacto vs esfuerzo
-    x-axis Bajo esfuerzo --> Alto esfuerzo
-    y-axis Bajo impacto --> Alto impacto
-    quadrant-1 Esperar (alto esfuerzo, bajo impacto)
-    quadrant-2 Priorizar (alto impacto, alto esfuerzo)
-    quadrant-3 Descartar o al final
-    quadrant-4 Quick wins (alto impacto, bajo esfuerzo)
-    F1 Iconos y colores: [0.25, 0.85]
-    F2 Agrupar por ext: [0.35, 0.75]
-    F3 Búsqueda fuzzy: [0.30, 0.70]
-    F4.3 Modal nueva carpeta: [0.20, 0.95]
-    F4.1-4.2 Atajos: [0.40, 0.60]
-    F5 Skill del agente: [0.60, 0.40]
+```sql
+-- Dónde se guardaría el "pendiente" del write offline.
+-- Misma DB que `files_cache` y `checkouts` (ver Feature 7).
+pending_mutations (
+  id          INTEGER PRIMARY KEY,
+  drive_id    TEXT,
+  op          TEXT,         -- 'upload' | 'delete' | 'rename'
+  payload     TEXT,         -- JSON con la operación
+  created_at  INTEGER,
+  retry_count INTEGER DEFAULT 0,
+  status      TEXT          -- 'pending' | 'in_progress' | 'failed'
+)
 ```
 
-## Ruta crítica (cuello de botella)
+Es el mismo patrón que Engram usa con `sync_mutations` (outbox): operación local → INSERT en cola → worker procesa contra destino.
 
-```mermaid
-graph LR
-    A[Task 4.3<br/>cierra BUG-001] -->|desbloquea| B[Tests 12/12]
-    A -->|permite| C[Feature 1<br/>visual]
-    C -->|permite| D[Feature 2<br/>agrupar]
-    D -->|permite| E[Feature 3<br/>fuzzy]
-    E --> F[Polish final]
-    F --> G[Feature 5<br/>skill]
+### Tasks (placeholder, no priorizar)
 
-    classDef bottleneck fill:#ff6b6b,stroke:#c92a2a,color:#fff
-    class A bottleneck
-```
+- [ ] Task 6.1 — Definir conflict resolution strategy (last-write-wins vs three-way merge)
+- [ ] Task 6.2 — Diseñar worker de sync con backoff
+- [ ] Task 6.3 — UX de "tenés N operaciones pendientes de subir"
+- [ ] Task 6.4 — Tests de escenarios offline
 
-## Orden recomendado paso a paso
+### Criterios para retomar
 
-```mermaid
-gantt
-    title Roadmap sugerido (1 task = ~30min)
-    dateFormat  HH:mm
-    axisFormat %H:%M
+- [ ] Feature 7 (read offline) completada y estable en producción
+- [ ] Métricas de uso que justifiquen el esfuerzo (ej. > X% usuarios pierden conectividad seguido)
+- [ ] Diseño de conflict resolution acordado
 
-    section Bug fix
-    Task 4.3 Modal nueva carpeta    :crit, task43, 00:00, 30m
-
-    section Visual
-    Task 1.1 Mapeo extensión        :task11, after task43, 20m
-    Task 1.2 Render íconos         :task12, after task11, 30m
-    Task 1.3 Color por tipo        :task13, after task12, 20m
-    Task 1.4 Test E2E íconos       :task14, after task13, 20m
-
-    section Navegación
-    Task 2.1 Lógica agrupación     :task21, after task14, 20m
-    Task 2.2 Botón toggle          :task22, after task21, 20m
-    Task 2.3 Secciones colapsables :task23, after task22, 30m
-    Task 2.4 Test E2E agrupación   :task24, after task23, 20m
-
-    section Búsqueda
-    Task 3.1 Integrar Fuse.js      :task31, after task24, 15m
-    Task 3.2 Reemplazar filtrado   :task32, after task31, 30m
-    Task 3.3 Test fuzzy            :task33, after task32, 20m
-
-    section Atajos
-    Task 4.1 Listener teclado      :task41, after task33, 20m
-    Task 4.2 Atajos básicos        :task42, after task41, 30m
-
-    section Skill
-    Task 5.1 Crear skill           :task51, after task42, 20m
-    Task 5.2 Documentar            :task52, after task51, 10m
-    Task 5.3 Auto-actualizar       :task53, after task52, 20m
-```
-
-## Leyenda de colores
-
-- 🔴 **Rojo** = crítico, resolver primero (cuello de botella o cierra bug).
-- 🟡 **Amarillo** = alto impacto, recomendado.
-- 🔵 **Celeste** = impacto medio, hace falta pulir lo anterior primero.
-- 🟣 **Violeta** = bajo impacto, dejar para el final.
-- 🟢 **Verde** = estado inicial/goal.
+---
