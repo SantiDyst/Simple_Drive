@@ -810,9 +810,15 @@
       if (e.key === 'Enter') {
         e.preventDefault();
         const q = state.search;
+        // FIX: Enter debe APLICAR el filtro, no limpiarlo.
+        // Antes llamaba a closeSearchOverlay() que ahora limpia state + re-renderiza,
+        // deshaciendo el filtro inmediatamente. Sincronizar el toolbar con
+        // state.search para que el usuario vea el filtro aplicado, y cerrar
+        // el overlay solo visualmente.
+        if (els.search) els.search.value = q;
+        els.searchOverlay.classList.add('hidden');
         els.searchOverlayInput.value = '';
         els.searchOverlayInput.blur();
-        closeSearchOverlay();
         if (q) toast('Filtro aplicado: ' + q, 'success');
       }
     });
