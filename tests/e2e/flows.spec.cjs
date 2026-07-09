@@ -66,15 +66,16 @@ test('flows — botón "Atrás" regresa a la raíz', async () => {
   }
 });
 
-test('flows — búsqueda filtra la lista en tiempo real', async () => {
-  fs.mkdirSync(path.join(TEST_DRIVE_ROOT, 'buscar-azul'), { recursive: true });
-  fs.mkdirSync(path.join(TEST_DRIVE_ROOT, 'buscar-rojo'), { recursive: true });
+test('flows — búsqueda filtra por prefijo estricto (modo strict)', async () => {
+  fs.mkdirSync(path.join(TEST_DRIVE_ROOT, 'azul-buscar'), { recursive: true });
+  fs.mkdirSync(path.join(TEST_DRIVE_ROOT, 'rojo-buscar'), { recursive: true });
+  fs.mkdirSync(path.join(TEST_DRIVE_ROOT, 'verde-otro'), { recursive: true });
 
   const { app, window } = await launchApp({ env: { GDRIVE_ROOT: TEST_DRIVE_ROOT } });
 
   try {
     const initialCount = await window.locator('.file-row').count();
-    expect(initialCount).toBeGreaterThanOrEqual(2);
+    expect(initialCount).toBeGreaterThanOrEqual(3);
 
     await window.locator('#search').fill('azul');
     await window.waitForTimeout(400);
@@ -87,8 +88,14 @@ test('flows — búsqueda filtra la lista en tiempo real', async () => {
     await window.locator('#search').fill('roj');
     await window.waitForTimeout(400);
 
-    const fuzzyCount = await window.locator('.file-row').count();
-    expect(fuzzyCount).toBeGreaterThanOrEqual(1);
+    const prefixCount = await window.locator('.file-row').count();
+    expect(prefixCount).toBe(1);
+
+    await window.locator('#search').fill('buscar');
+    await window.waitForTimeout(400);
+
+    const substringCount = await window.locator('.file-row').count();
+    expect(substringCount).toBe(0);
 
     await window.locator('#search').fill('');
     await window.waitForTimeout(400);
@@ -97,8 +104,9 @@ test('flows — búsqueda filtra la lista en tiempo real', async () => {
     expect(restoredCount).toBe(initialCount);
   } finally {
     await closeApp(app);
-    fs.rmSync(path.join(TEST_DRIVE_ROOT, 'buscar-azul'), { recursive: true, force: true });
-    fs.rmSync(path.join(TEST_DRIVE_ROOT, 'buscar-rojo'), { recursive: true, force: true });
+    fs.rmSync(path.join(TEST_DRIVE_ROOT, 'azul-buscar'), { recursive: true, force: true });
+    fs.rmSync(path.join(TEST_DRIVE_ROOT, 'rojo-buscar'), { recursive: true, force: true });
+    fs.rmSync(path.join(TEST_DRIVE_ROOT, 'verde-otro'), { recursive: true, force: true });
   }
 });
 

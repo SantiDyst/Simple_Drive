@@ -26,8 +26,9 @@ Para más detalle arquitectónico ver `ARCHITECTURE.md` en la raíz.
 
 ## Convenciones del código
 
-- **Sin frameworks en runtime.** HTML/CSS/JS vanilla en el renderer. Fuse.js es la única excepción (justificada por la búsqueda fuzzy).
-- **CSS con variables** definidas en `:root` (paleta dark mode).
+- **Sin frameworks en runtime.** HTML/CSS/JS vanilla en el renderer. Fuse.js es la única excepción de runtime (justificada por la búsqueda fuzzy).
+- **CSS con Tailwind v4** como única dependencia de build. Config CSS-first via `@theme` en `public/styles.src.css`. Variables design-token se nombran con prefijo `--color-*` y se materializan en utilities `bg-*`, `text-*`, `border-*`. Compilación vía `npm run build:css` (one-shot) o `npm run watch:css` (dev). Output en `public/dist/styles.css`, linkeado desde `index.html`.
+- **Modo dark/light via clase `.dark`** en `<html>`, toggle gestionado por `darkMode: 'class'` (configurado en CSS con `@custom-variant dark`). Implementado desde día 1.
 - **IPC** siempre via `window.driveman.*`. Nunca tocar `fs` desde el renderer.
 - **Constraints cerrados** (no negociables):
   - Sin React, Vue ni frameworks de UI.
@@ -94,20 +95,20 @@ Simple_Drive/
 
 <!-- AGENT_STATE_START -->
 
-**Última corrida**: 2026-07-08 21:19:24
+**Última corrida**: 2026-07-09 02:28:40
 
 **Resumen rápido**:
-- Passed: 20 / 20
+- Passed: 23 / 23
 - Failed: 0
 - Skipped: 0
-- Duración: 2.5s
+- Duración: 53.2s
 - Bugs abiertos: 0
 - Status: passed
 
 **Delta vs corrida anterior**:
 - Mejoraron: 0
 - Regresiones: 0
-- Sin cambios: 20
+- Sin cambios: 23
 
 _Para detalle completo ver `tests/.runs/LATEST.md` y `agents/.memory/memory.md`._
 

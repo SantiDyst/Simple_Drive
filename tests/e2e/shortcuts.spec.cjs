@@ -89,3 +89,75 @@ test('shortcuts — F2 inicia rename en el item seleccionado', async () => {
     try { fs.rmSync(target, { force: true }); } catch {}
   }
 });
+
+test('shortcuts — Ctrl+B abre el overlay de búsqueda y Esc lo cierra', async () => {
+  const { app, window } = await launchApp({ env: { GDRIVE_ROOT: TEST_DRIVE_ROOT } });
+
+  try {
+    const overlay = window.locator('#search-overlay');
+    await expect(overlay).toBeHidden();
+
+    await window.locator('body').click({ position: { x: 10, y: 10 } });
+    await window.keyboard.press('Control+b');
+    await window.waitForTimeout(200);
+
+    await expect(overlay).toBeVisible();
+    const focused = await window.evaluate(() => document.activeElement && document.activeElement.id);
+    expect(focused).toBe('search-overlay__input');
+
+    await window.keyboard.press('Escape');
+    await window.waitForTimeout(200);
+
+    await expect(overlay).toBeHidden();
+  } finally {
+    await closeApp(app);
+  }
+});
+
+test('shortcuts — Enter en #search aplica el filtro y limpia el input', async () => {
+  fs.mkdirSync(path.join(TEST_DRIVE_ROOT, 'apl-test'), { recursive: true });
+
+  const { app, window } = await launchApp({ env: { GDRIVE_ROOT: TEST_DRIVE_ROOT } });
+
+  try {
+    const search = window.locator('#search');
+    await search.click();
+    await search.fill('apl');
+    await window.waitForTimeout(200);
+
+    await search.press('Enter');
+    await window.waitForTimeout(200);
+
+    const valueAfterEnter = await search.inputValue();
+    expect(valueAfterEnter).toBe('');
+
+    const rowCount = await window.locator('.file-row').count();
+    expect(rowCount).toBe(1);
+  } finally {
+    await closeApp(app);
+    fs.rmSync(path.join(TEST_DRIVE_ROOT, 'apl-test'), { recursive: true, force: true });
+  }
+});
+
+test('shortcuts — toggle de tema cambia entre light y dark con persistencia', async () => {
+  const { app, window } = await launchApp({ env: { GDRIVE_ROOT: TEST_DRIVE_ROOT } });
+
+  try {
+    const themeBtn = window.locator('#btn-theme-toggle');
+    await expect(themeBtn).toBeVisible();
+
+    const initialIsDark = await window.evaluate(() => document.documentElement.classList.contains('dark'));
+    const initialText = await themeBtn.textContent();
+
+    await themeBtn.click();
+    await window.waitForTimeout(200);
+
+    const afterIsDark = await window.evaluate(() => document.documentElement.classList.contains('dark'));
+    const afterText = await themeBtn.textContent();
+
+    expect(afterIsDark).toBe(!initialIsDark);
+    expect(afterText).not.toBe(initialText);
+  } finally {
+    await closeApp(app);
+  }
+});

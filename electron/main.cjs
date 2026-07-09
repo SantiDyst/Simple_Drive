@@ -315,6 +315,7 @@ ipcMain.handle('logs:get-dir', () => logsDir);
 
 app.whenReady().then(() => {
   try {
+    Menu.setApplicationMenu(null);
     createWindow();
     createTray();
     configureAutoStart();

@@ -6,7 +6,11 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
-    "build": "electron-builder --win",
+    "build:css": "tailwindcss -i public/styles.src.css -o public/dist/styles.css --minify",
+    "watch:css": "tailwindcss -i public/styles.src.css -o public/dist/styles.css --watch",
+    "css": "npm run build:css",
+    "dev:full": "npm run watch:css & electron . --dev",
+    "build": "npm run build:css && electron-builder --win",
     "build:portable": "electron-builder --win portable",
     "test": "playwright test --config=tests/playwright.config.cjs",
     "test:smoke": "playwright test --config=tests/playwright.config.cjs smoke.spec.cjs",
@@ -20,9 +24,13 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",
+    "@tailwindcss/cli": "^4.3.2",
+    "@tailwindcss/postcss": "^4.3.2",
     "electron": "^35.7.5",
     "electron-builder": "^25.0.0",
-    "playwright": "^1.61.1"
+    "playwright": "^1.61.1",
+    "postcss": "^8.5.16",
+    "tailwindcss": "^4.3.2"
   },
   "engines": {
     "node": ">=22"

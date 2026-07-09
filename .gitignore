@@ -22,3 +22,6 @@ test-results/
 test-results.json
 playwright/.cache/
 tests/.runs/run-*.md
+
+# Tailwind CSS output (regenerable con `npm run build:css`)
+public/dist/

@@ -2,38 +2,41 @@
 
 _Este archivo se sobreescribe en cada corrida. Para historial completo ver archivos run-*.md._
 
-Run timestamp: 2026-07-08 18:19:24
+Run timestamp: 2026-07-08 23:28:40
 
-# Run 2026-07-08 21:19:24
+# Run 2026-07-09 02:28:40
 
 ## Resumen
-- Total: 20 | Passed: 20 | Failed: 0 | Skipped: 0
-- Duracion: 2.5s
+- Total: 23 | Passed: 23 | Failed: 0 | Skipped: 0
+- Duracion: 53.2s
 - Status final: passed
 - Modo: dev (electron .)
 
 ## Resultado por test
 
-- ✅ errors — IPC rechaza rutas fuera de la raíz detectada (2.2s)
-- ✅ errors — IPC rechaza intentos de path traversal (..\..\) (2.5s)
-- ✅ errors — shell.openExternal rechaza protocolos no http/https (2.7s)
-- ✅ errors — la app no crashea cuando IPC devuelve null para driveRoot (4.2s)
-- ✅ events — el watcher detecta archivos nuevos y refresca la lista (4.2s)
-- ✅ events — el watcher detecta archivos borrados y refresca la lista (3.4s)
-- ✅ flows — botón "Nueva carpeta" crea una carpeta visible en la lista (3.3s)
-- ✅ flows — botón "Atrás" regresa a la raíz (5.0s)
-- ✅ flows — búsqueda filtra la lista en tiempo real (4.2s)
-- ✅ flows — abrir un archivo ejecuta IPC sin errores (2.4s)
-- ✅ shortcuts — Ctrl+L enfoca el input de búsqueda (2.6s)
-- ✅ shortcuts — Ctrl+N abre el modal de nueva carpeta (2.4s)
-- ✅ shortcuts — Escape limpia la búsqueda cuando hay texto (2.5s)
-- ✅ shortcuts — F2 inicia rename en el item seleccionado (3.2s)
-- ✅ smoke — la app arranca, detecta raíz, lista archivos y expone IPC (3.5s)
-- ✅ smoke — navegación a subcarpeta actualiza breadcrumb y listado (5.5s)
-- ✅ visual — cada tipo de archivo recibe su clase CSS data-type (4.6s)
-- ✅ visual — las carpetas reciben data-type=folder (3.4s)
-- ✅ visual — el ícono de cada fila corresponde al tipo semántico (2.0s)
-- ✅ visual — botón "Agrupar" alterna entre vista plana y agrupada (2.5s)
+- ✅ errors — IPC rechaza rutas fuera de la raíz detectada (1.9s)
+- ✅ errors — IPC rechaza intentos de path traversal (..\..\) (1.8s)
+- ✅ errors — shell.openExternal rechaza protocolos no http/https (1.8s)
+- ✅ errors — la app no crashea cuando IPC devuelve null para driveRoot (2.9s)
+- ✅ events — el watcher detecta archivos nuevos y refresca la lista (2.4s)
+- ✅ events — el watcher detecta archivos borrados y refresca la lista (2.4s)
+- ✅ flows — botón "Nueva carpeta" crea una carpeta visible en la lista (1.9s)
+- ✅ flows — botón "Atrás" regresa a la raíz (3.9s)
+- ✅ flows — búsqueda filtra por prefijo estricto (modo strict) (3.5s)
+- ✅ flows — abrir un archivo ejecuta IPC sin errores (1.8s)
+- ✅ shortcuts — Ctrl+L enfoca el input de búsqueda (2.1s)
+- ✅ shortcuts — Ctrl+N abre el modal de nueva carpeta (2.1s)
+- ✅ shortcuts — Escape limpia la búsqueda cuando hay texto (2.3s)
+- ✅ shortcuts — F2 inicia rename en el item seleccionado (2.2s)
+- ✅ shortcuts — Ctrl+B abre el overlay de búsqueda y Esc lo cierra (2.3s)
+- ✅ shortcuts — Enter en #search aplica el filtro y limpia el input (2.2s)
+- ✅ shortcuts — toggle de tema cambia entre light y dark con persistencia (2.1s)
+- ✅ smoke — la app arranca, detecta raíz, lista archivos y expone IPC (1.9s)
+- ✅ smoke — navegación a subcarpeta actualiza breadcrumb y listado (3.4s)
+- ✅ visual — cada tipo de archivo recibe su clase CSS data-type (1.9s)
+- ✅ visual — las carpetas reciben data-type=folder (1.8s)
+- ✅ visual — el ícono de cada fila corresponde al tipo semántico (1.8s)
+- ✅ visual — botón "Agrupar" alterna entre vista plana y agrupada (1.9s)
 
 ## Bugs conocidos (carry-over)
 

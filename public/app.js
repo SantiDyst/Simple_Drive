@@ -81,6 +81,9 @@
     sortKey: document.getElementById('sort-key'),
     sortDir: document.getElementById('sort-dir'),
     search: document.getElementById('search'),
+    themeToggle: document.getElementById('btn-theme-toggle'),
+    searchOverlay: document.getElementById('search-overlay'),
+    searchOverlayInput: document.getElementById('search-overlay__input'),
     fileList: document.getElementById('file-list'),
     emptyState: document.getElementById('empty-state'),
     errorState: document.getElementById('error-state'),
@@ -169,13 +172,14 @@
     if (!state.fuse || state.fuseIndexBuiltFor !== state.items) {
       state.fuse = new window.Fuse(state.items, {
         keys: ['name'],
-        threshold: 0.4,
+        threshold: 0.0,
         ignoreLocation: true,
-        includeScore: false
+        useExtendedSearch: true,
+        minMatchCharLength: 1
       });
       state.fuseIndexBuiltFor = state.items;
     }
-    const results = state.fuse.search(q);
+    const results = state.fuse.search('^' + q);
     state.filtered = results.map(r => r.item);
   }
 
@@ -482,6 +486,11 @@
     );
 
     if (e.key === 'Escape') {
+      if (!els.searchOverlay.classList.contains('hidden')) {
+        closeSearchOverlay();
+        e.preventDefault();
+        return;
+      }
       if (els.search.value) {
         els.search.value = '';
         state.search = '';
@@ -539,6 +548,12 @@
       e.preventDefault();
       els.search.focus();
       els.search.select();
+      return;
+    }
+
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+      e.preventDefault();
+      openSearchOverlay();
       return;
     }
   }
@@ -751,6 +766,35 @@
       clearTimeout(state.searchDebounceTimer);
       state.searchDebounceTimer = setTimeout(renderFileList, 120);
     };
+    els.search.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        els.search.value = '';
+        els.search.blur();
+        toast('Filtro aplicado: ' + state.search, 'success');
+      }
+    });
+    els.themeToggle.onclick = () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      try { localStorage.setItem('driveman.theme', isDark ? 'dark' : 'light'); } catch {}
+      els.themeToggle.textContent = isDark ? '☾' : '☼';
+      els.themeToggle.title = isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro';
+    };
+    els.searchOverlayInput.addEventListener('input', () => {
+      state.search = els.searchOverlayInput.value;
+      clearTimeout(state.searchDebounceTimer);
+      state.searchDebounceTimer = setTimeout(renderFileList, 120);
+    });
+    els.searchOverlayInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const q = state.search;
+        els.searchOverlayInput.value = '';
+        els.searchOverlayInput.blur();
+        closeSearchOverlay();
+        if (q) toast('Filtro aplicado: ' + q, 'success');
+      }
+    });
     document.addEventListener('click', (e) => {
       if (!els.contextMenu.contains(e.target)) hideContextMenu();
     });
@@ -767,7 +811,40 @@
     }
   }
 
+  function openSearchOverlay() {
+    els.searchOverlay.classList.remove('hidden');
+    els.searchOverlayInput.value = state.search;
+    setTimeout(() => {
+      els.searchOverlayInput.focus();
+      els.searchOverlayInput.select();
+    }, 30);
+  }
+
+  function closeSearchOverlay() {
+    els.searchOverlay.classList.add('hidden');
+    els.searchOverlayInput.value = '';
+    els.searchOverlayInput.blur();
+  }
+
+  function initTheme() {
+    let saved = null;
+    try { saved = localStorage.getItem('driveman.theme'); } catch {}
+    let isDark = false;
+    if (saved === 'dark') isDark = true;
+    else if (saved === 'light') isDark = false;
+    else isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      els.themeToggle.textContent = '☾';
+      els.themeToggle.title = 'Cambiar a tema claro';
+    } else {
+      els.themeToggle.textContent = '☼';
+      els.themeToggle.title = 'Cambiar a tema oscuro';
+    }
+  }
+
   async function init() {
+    initTheme();
     bindEvents();
     try {
       state.driveRoot = await window.driveman.app.getDriveRoot();

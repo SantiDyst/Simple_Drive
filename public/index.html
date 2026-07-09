@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
   <title>Driveman</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="dist/styles.css">
 </head>
-<body>
+<body class="bg-bg text-text">
   <div id="app">
     <header class="header">
       <h1 class="header__title">Driveman</h1>
@@ -30,7 +30,8 @@
         </select>
         <button class="btn btn-secondary btn-sort-direction" id="sort-dir" title="Cambiar dirección">↓</button>
       </div>
-      <input class="search" id="search" type="text" placeholder="Filtrar…" autocomplete="off">
+      <input class="search" id="search" type="text" placeholder="Filtrar… (Enter aplica, Esc limpia)" autocomplete="off">
+      <button class="btn btn-secondary" id="btn-theme-toggle" title="Cambiar tema">☼</button>
     </section>
 
     <main id="explorer">
@@ -52,6 +53,11 @@
   </div>
 
 <div id="context-menu" class="context-menu hidden"></div>
+
+<div id="search-overlay" class="search-overlay hidden" role="search" aria-label="Búsqueda rápida">
+  <span class="search-overlay__hint">Buscar</span>
+  <input id="search-overlay__input" type="text" class="search-overlay__input" placeholder="Empezá a escribir… (Esc para cerrar)" autocomplete="off" spellcheck="false">
+</div>
 
     <dialog id="modal-new-folder" class="modal">
       <form method="dialog" class="modal__form">
