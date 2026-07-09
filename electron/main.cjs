@@ -143,9 +143,17 @@ function createWindow() {
   });
 
   mainWindow.on('close', (event) => {
+    log('info', 'main', 'mainWindow close event', {
+      isQuitting,
+      isVisible: mainWindow.isVisible(),
+      isDestroyed: mainWindow.isDestroyed()
+    });
     if (!isQuitting) {
       event.preventDefault();
       mainWindow.hide();
+      log('info', 'main', 'mainWindow close prevented, hidden', {});
+    } else {
+      log('info', 'main', 'mainWindow close allowed (isQuitting=true)', {});
     }
   });
 
@@ -269,10 +277,19 @@ ipcMain.handle('fs:create-folder', async (_e, dirPath) => {
 });
 
 ipcMain.handle('fs:open-file', async (_e, filePath) => {
+  log('info', 'main', 'fs:open-file called', {
+    filePath,
+    ext: path.extname(filePath).toLowerCase()
+  });
   const safe = resolveInsideRoot(filePath);
-  if (!safe) throw new Error('Acceso denegado: ruta fuera de la raíz');
-  await shell.openPath(safe);
-  return { ok: true };
+  if (!safe) {
+    log('warn', 'main', 'fs:open-file denied', { filePath, reason: 'outside drive root' });
+    throw new Error('Acceso denegado: ruta fuera de la raíz de Google Drive');
+  }
+  log('info', 'main', 'fs:open-file invoking shell.openPath', { safe });
+  const result = await shell.openPath(safe);
+  log('info', 'main', 'fs:open-file shell.openPath returned', { safe, result });
+  return { ok: true, result };
 });
 
 ipcMain.handle('fs:rename', async (_e, oldPath, newPath) => {
@@ -329,10 +346,20 @@ app.whenReady().then(() => {
 app.on('window-all-closed', (event) => event.preventDefault());
 
 app.on('before-quit', () => {
+  const stack = new Error('before-quit stack').stack;
+  log('info', 'main', 'App before-quit', { stack });
   isQuitting = true;
   if (fsWatcher) { try { fsWatcher.close(); } catch {} }
-  log('info', 'main', 'App quitting');
   if (writeStream) writeStream.end();
+});
+
+app.on('will-quit', () => {
+  log('info', 'main', 'App will-quit');
+});
+
+app.on('quit', (_event, exitCode) => {
+  // Nota: este log puede no escribirse si el writeStream ya se cerró arriba.
+  console.log(`[driveman] App quit exitCode=${exitCode} timestamp=${new Date().toISOString()}`);
 });
 
 app.on('activate', () => {
