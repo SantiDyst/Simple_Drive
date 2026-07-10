@@ -1032,9 +1032,19 @@
       renderFileList();
     };
     // Toggle "Listar": alterna entre vista tabla (list) y vista cards.
-    // El botón persiste su estado con aria-pressed + btn--active.
+    // Regla del usuario: las cards SOLO se muestran en la raíz (Mi unidad).
+    // Si está en una subcarpeta y activa Listar, navega a la raíz primero.
     if (els.listar) {
-      els.listar.onclick = () => {
+      els.listar.onclick = async () => {
+        if (state.currentDir !== state.driveRoot) {
+          // Forzar navegación a la raíz antes de activar cards.
+          state.viewMode = 'cards';
+          els.listar.setAttribute('aria-pressed', 'true');
+          els.listar.classList.add('btn--active');
+          await navigate(state.driveRoot);
+          return;
+        }
+        // Toggle normal en la raíz
         state.viewMode = state.viewMode === 'cards' ? 'list' : 'cards';
         els.listar.setAttribute('aria-pressed', String(state.viewMode === 'cards'));
         els.listar.classList.toggle('btn--active', state.viewMode === 'cards');
