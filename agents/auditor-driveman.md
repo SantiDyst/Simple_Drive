@@ -86,17 +86,20 @@ Cualquier violación es **RECHAZABLE** sin discusión.
 
 ---
 
-## 📊 Estado actual del proyecto (sesión 2026-07-09)
+## 📊 Estado actual del proyecto (sesión 2026-07-10)
 
 - **Tailwind v4.3.2** integrado, `npm run build:css` y `watch:css` operativos.
-- **Light mode (default):** paleta P1 (`bg #edf3fe`, primary `#1065f4`, secondary `#8c77f9`, accent `#8e47f7`).
-- **Dark mode:** slate-900 base + blue-500/violet-400-500. Toggle persiste en `localStorage` y respeta `prefers-color-scheme` la primera vez.
-- **Search estricta (prefijo):** Fuse.js con `useExtendedSearch: true` + `^query`. `"H"` solo lista archivos que arrancan con H.
-- **Atajos nuevos:** `Ctrl+B` abre search overlay al pie (`#search-overlay`), `Esc` lo cierra.
-- **Enter en `#search`:** aplica el filtro y limpia el input visible.
+- **Theme system Figma:** dark es el default (sin clase en `<html>`), cream es el override (clase `.theme-cream`). Persistencia en `localStorage` clave `driveman.theme`. Toggle en `#btn-theme-toggle` aplica la clase.
+- **Tokens semánticos del theme:** `--color-bg`, `--color-text`, `--color-primary`, etc. Tipo-semánticos: `--color-type-{sensitive,binary,office,docs,media,default}`.
+- **Taxonomía de tipos actual (post-6fdef81):** `sensitive | binary | office | docs | media | default | folder`. Legacy de 9 tipos deprecada.
+- **Search estricta (prefijo):** Fuse.js v6.4.6 fijo con `useExtendedSearch: true` + `^query`. `"H"` solo lista archivos que arrancan con H.
+- **Vista cards:** toggle `#btn-listar`, renderiza hero card (con barra de disco en root) + grid. Contenida (max-width 1024px), no se expande al ancho de la app. Solo en root o con auto-navegación.
+- **Atajos:** `Ctrl+L` enfoca `#search`, `Ctrl+N` abre modal nueva carpeta, `Ctrl+B` abre search overlay al pie, `Esc` lo cierra (limpia filtro también), `Enter` aplica filtro (NO limpia input visible — decisión consciente), `Alt+←` goBack, `F2` rename, `Delete` papelera.
+- **Empty state contextual:** "Sin resultados para X" cuando hay filtro activo, "Esta carpeta vacía." en caso contrario.
+- **Clear search state:** helper único en `app.js#clearSearchState()` que limpia `state.search` + ambos inputs, invocado por `navigate()`, `goBack()` y `closeSearchOverlay()`.
 - **Menú nativo Electron removido** (`Menu.setApplicationMenu(null)`).
-- **Suite:** 23/23 verde (3 specs nuevos en `shortcuts.spec.cjs`, `flows.spec.cjs` search actualizado).
-- **Último commit:** `544c7cd feat: integrate Tailwind v4 + dark/light toggle + Ctrl+B search + strict prefix search`.
+- **Suite:** 26/26 verde. Specs cubren: smoke, flows (incl. empty state contextual + botón Atrás + nueva carpeta + búsqueda strict + abrir archivo), events, errors (IPC + path traversal + shell.openExternal), visual (data-type + íconos + agrupar), shortcuts (Ctrl+L/N/B/L/Q + Esc + F2 + Enter + theme toggle).
+- **Último commit:** `f1d9438 test(visual): update data-type test post-6fdef81 — taxonomia consolidada`.
 
 Archivos sensibles a regresiones:
 - `electron/main.cjs` — menu removed; lógica de handlers intacta.
@@ -141,6 +144,10 @@ Archivos sensibles a regresiones:
 - [ ] Sin `Co-Authored-By` ni atribución de IA.
 - [ ] Si la diff toca más de 2 archivos no relacionados entre sí, pedir que se parta en commits chicos.
 
+### Consistencia documental (cross-commit)
+- [ ] **Si este commit cambia paleta, theme system, taxonomía de tipos, convención de naming, contrato de IPC o modelo de datos**, verificar que este mismo archivo (`auditor-driveman.md`) + tests + skills afectadas se actualizaron en el mismo commit. La auditoría post-hoc no alcanza — entre el commit y la auditoría, el agente trabaja con información desfasada.
+- [ ] Correr `node agents/sync-check.cjs` para validar que el "Estado actual del proyecto" documentado arriba matchee con el HEAD real del repo (último commit, suite count, timestamp de sesión). Si flaguea issues, tratar como bloqueante hasta resolver.
+
 ---
 
 ## 📝 Output esperado: Orden de Trabajo Definitiva
@@ -182,6 +189,7 @@ Razón: <una línea>.
 6. **"Cambiar el tema por defecto a dark"** — el usuario eligió P1 light. Solo cambiar con su OK.
 7. **"Cambiar la ruta de `/index.html` o mover el `dist/`"** — Electron carga paths relativos. Cambios estructurales acá rompen el build sin avisar.
 8. **"Olvidar el `dist/` en commit"** — verificar `.gitignore` antes de cada commit.
+9. **"Olvidar sincronizar agentes/skills/tests con commit estructural"** — un commit que cambia paleta, theme system, taxonomía de tipos, convención de naming o contrato de IPC debe actualizar en el MISMO commit cualquier agente/skill que asuma el estado anterior (incluido este `auditor-driveman.md`). Tests + skills viven en el repo: la auditoría post-hoc no alcanza. Mitigación: item explícito en el checklist + script `agents/sync-check.cjs` que valida consistencia antes de pushear.
 
 ---
 
