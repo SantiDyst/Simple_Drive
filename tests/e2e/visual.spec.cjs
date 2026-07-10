@@ -86,12 +86,15 @@ test('visual — el ícono de cada fila corresponde al tipo semántico', async (
   const { app, window } = await launchApp({ env: { GDRIVE_ROOT: TEST_DRIVE_ROOT } });
 
   try {
-    const pdfRow = window.locator('.file-row[data-type="doc"]').first();
+    // Taxonomía actual (post-6fdef81): docs | office | media | binary | sensitive | default | folder.
+    // Antes (legacy) había 9 tipos: doc, sheet, slides, image, video, audio, archive, code, other.
+    const pdfRow = window.locator('.file-row[data-type="docs"]').first();
     await expect(pdfRow).toBeVisible();
     const pdfIcon = await pdfRow.locator('.file-row__icon').textContent();
     expect(pdfIcon.length).toBeGreaterThan(0);
 
-    const jsRow = window.locator('.file-row[data-type="code"]').first();
+    const jsRow = window.locator('.file-row[data-type="sensitive"]').first();
+    await expect(jsRow).toBeVisible();
     const jsIcon = await jsRow.locator('.file-row__icon').textContent();
     expect(jsIcon).not.toBe(pdfIcon);
   } finally {
