@@ -114,7 +114,64 @@ test('shortcuts — Ctrl+B abre el overlay de búsqueda y Esc lo cierra', async 
   }
 });
 
-test('shortcuts — Enter en #search aplica el filtro y limpia el input', async () => {
+test('shortcuts — Ctrl+B click en backdrop cierra el overlay', async () => {
+  const { app, window } = await launchApp({ env: { GDRIVE_ROOT: TEST_DRIVE_ROOT } });
+
+  try {
+    const overlay = window.locator('#search-overlay');
+    const backdrop = window.locator('#search-overlay-backdrop');
+    await expect(overlay).toBeHidden();
+    await expect(backdrop).toBeHidden();
+
+    await window.locator('body').click({ position: { x: 10, y: 10 } });
+    await window.keyboard.press('Control+b');
+    await window.waitForTimeout(200);
+    await expect(overlay).toBeVisible();
+    await expect(backdrop).toBeVisible();
+
+    // Click en el backdrop (esquina superior izquierda, fuera del overlay centrado).
+    await backdrop.click({ position: { x: 5, y: 5 } });
+    await window.waitForTimeout(200);
+    await expect(overlay).toBeHidden();
+    await expect(backdrop).toBeHidden();
+  } finally {
+    await closeApp(app);
+  }
+});
+
+test('shortcuts — Ctrl+B happy path: tipear + Enter aplica el filtro y sincroniza el toolbar', async () => {
+  fs.mkdirSync(path.join(TEST_DRIVE_ROOT, 'happy-btest'), { recursive: true });
+
+  const { app, window } = await launchApp({ env: { GDRIVE_ROOT: TEST_DRIVE_ROOT } });
+
+  try {
+    const overlay = window.locator('#search-overlay');
+    const toolbar = window.locator('#search');
+
+    await window.locator('body').click({ position: { x: 10, y: 10 } });
+    await window.keyboard.press('Control+b');
+    await window.waitForTimeout(200);
+    await expect(overlay).toBeVisible();
+
+    await overlay.locator('#search-overlay__input').fill('happy');
+    await window.waitForTimeout(200);
+
+    await window.keyboard.press('Enter');
+    await window.waitForTimeout(200);
+
+    await expect(overlay).toBeHidden();
+    const toolbarValue = await toolbar.inputValue();
+    expect(toolbarValue).toBe('happy');
+
+    const rowCount = await window.locator('.file-row').count();
+    expect(rowCount).toBe(1);
+  } finally {
+    await closeApp(app);
+    fs.rmSync(path.join(TEST_DRIVE_ROOT, 'happy-btest'), { recursive: true, force: true });
+  }
+});
+
+test('shortcuts — Enter en #search aplica el filtro y mantiene el input visible', async () => {
   fs.mkdirSync(path.join(TEST_DRIVE_ROOT, 'apl-test'), { recursive: true });
 
   const { app, window } = await launchApp({ env: { GDRIVE_ROOT: TEST_DRIVE_ROOT } });
@@ -128,8 +185,10 @@ test('shortcuts — Enter en #search aplica el filtro y limpia el input', async 
     await search.press('Enter');
     await window.waitForTimeout(200);
 
+    // El usuario quiere ver qué filtro aplicó: Enter NO vacía el input.
+    // Se limpia con Escape o al navegar a otra carpeta.
     const valueAfterEnter = await search.inputValue();
-    expect(valueAfterEnter).toBe('');
+    expect(valueAfterEnter).toBe('apl');
 
     const rowCount = await window.locator('.file-row').count();
     expect(rowCount).toBe(1);
