@@ -205,16 +205,18 @@ test('shortcuts — toggle de tema cambia entre light y dark con persistencia', 
     const themeBtn = window.locator('#btn-theme-toggle');
     await expect(themeBtn).toBeVisible();
 
-    const initialIsDark = await window.evaluate(() => document.documentElement.classList.contains('dark'));
+    // Post-3ed2fb4 el toggle usa la clase `.theme-cream` (no `.dark`).
+    // Dark es el default (sin clase), cream es el override.
+    const initialIsCream = await window.evaluate(() => document.documentElement.classList.contains('theme-cream'));
     const initialText = await themeBtn.textContent();
 
     await themeBtn.click();
     await window.waitForTimeout(200);
 
-    const afterIsDark = await window.evaluate(() => document.documentElement.classList.contains('dark'));
+    const afterIsCream = await window.evaluate(() => document.documentElement.classList.contains('theme-cream'));
     const afterText = await themeBtn.textContent();
 
-    expect(afterIsDark).toBe(!initialIsDark);
+    expect(afterIsCream).toBe(!initialIsCream);
     expect(afterText).not.toBe(initialText);
   } finally {
     await closeApp(app);
