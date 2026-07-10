@@ -110,6 +110,31 @@ test('flows — búsqueda filtra por prefijo estricto (modo strict)', async () =
   }
 });
 
+test('flows — empty state muestra mensaje contextual cuando el filtro no matchea', async () => {
+  fs.mkdirSync(path.join(TEST_DRIVE_ROOT, 'algo-existe'), { recursive: true });
+
+  const { app, window } = await launchApp({ env: { GDRIVE_ROOT: TEST_DRIVE_ROOT } });
+
+  try {
+    const empty = window.locator('#empty-state');
+
+    // Caso 1: filtro sin matches → mensaje contextual
+    await window.locator('#search').fill('xyz-no-existe');
+    await window.waitForTimeout(400);
+    await expect(empty).toBeVisible();
+    await expect(empty).toHaveText('Sin resultados para "xyz-no-existe"');
+
+    // Caso 2: limpiar filtro → vuelve al mensaje genérico (la carpeta NO está vacía,
+    // así que el empty-state debe quedar oculto)
+    await window.locator('#search').fill('');
+    await window.waitForTimeout(400);
+    await expect(empty).toBeHidden();
+  } finally {
+    await closeApp(app);
+    fs.rmSync(path.join(TEST_DRIVE_ROOT, 'algo-existe'), { recursive: true, force: true });
+  }
+});
+
 test('flows — abrir un archivo ejecuta IPC sin errores', async () => {
   const filePath = path.join(TEST_DRIVE_ROOT, 'archivo-para-abrir.txt');
   fs.writeFileSync(filePath, 'contenido de prueba');

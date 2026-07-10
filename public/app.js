@@ -139,6 +139,7 @@
     themeToggle: document.getElementById('btn-theme-toggle'),
     searchOverlay: document.getElementById('search-overlay'),
     searchOverlayInput: document.getElementById('search-overlay__input'),
+    searchOverlayBackdrop: document.getElementById('search-overlay-backdrop'),
     fileList: document.getElementById('file-list'),
     emptyState: document.getElementById('empty-state'),
     errorState: document.getElementById('error-state'),
@@ -288,6 +289,13 @@
 
     els.fileList.innerHTML = '';
 
+    // Empty state contextual: diferenciar "carpeta vacía" de "sin matches del filtro".
+    // Antes mostraba "Esta carpeta está vacía." incluso cuando el filtro estaba
+    // bloqueando todo, confundiendo al usuario.
+    els.emptyState.textContent = state.search
+      ? 'Sin resultados para "' + state.search + '"'
+      : 'Esta carpeta está vacía.';
+
     // Vista cards: toggle "Listar". Renderiza hero + grid.
     if (state.viewMode === 'cards') {
       renderCards(sorted);
@@ -329,7 +337,7 @@
       if (col.key) {
         cell.onclick = () => {
           if (state.sortKey === col.key) {
-            state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+            state.sortDir = state.sortDir === 'desc' ? 'asc' : 'desc';
           } else {
             state.sortKey = col.key;
             state.sortDir = 'asc';
@@ -696,15 +704,21 @@
     return a.endsWith(sep) ? a + b : a + sep + b;
   }
 
+  function clearSearchState() {
+    // Helper único para limpiar el filtro en los 3 lugares donde se resetea:
+    // navigate(), goBack() y closeSearchOverlay(). Cada carpeta empieza "limpia"
+    // para que el usuario no se encuentre con resultados vacíos por un filtro
+    // heredado de la carpeta anterior.
+    state.search = '';
+    if (els.search) els.search.value = '';
+    if (els.searchOverlayInput) els.searchOverlayInput.value = '';
+  }
+
   async function navigate(dirPath) {
     if (!dirPath) return;
     if (state.currentDir) state.history.push(state.currentDir);
     state.currentDir = dirPath;
-    // Limpiar el filtro al cambiar de directorio: cada carpeta empieza "limpia"
-    // y el usuario no se encuentra con resultados vacíos por un filtro heredado.
-    state.search = '';
-    if (els.search) els.search.value = '';
-    if (els.searchOverlayInput) els.searchOverlayInput.value = '';
+    clearSearchState();
     // Limpiar diskInfo al navegar fuera de la raíz
     state.diskInfo = null;
     await loadCurrent();
@@ -726,6 +740,10 @@
   async function goBack() {
     if (state.history.length === 0) return;
     state.currentDir = state.history.pop();
+    // FIX: limpiar el filtro al volver también. Antes solo navigate() lo hacía,
+    // pero goBack() bypasea navigate() y dejaba el filtro heredado de la
+    // carpeta anterior visible en el breadcrumb actual.
+    clearSearchState();
     await loadCurrent();
   }
 
@@ -1109,6 +1127,7 @@
       if (!els.contextMenu.contains(e.target)) hideContextMenu();
     });
     document.addEventListener('keydown', handleGlobalKeydown);
+    wireSearchOverlayDismiss();
     if (window.driveman.fs && window.driveman.fs.onChanged) {
       window.driveman.fs.onChanged(async () => {
         if (state.currentDir) {
@@ -1123,6 +1142,7 @@
 
   function openSearchOverlay() {
     els.searchOverlay.classList.remove('hidden');
+    if (els.searchOverlayBackdrop) els.searchOverlayBackdrop.classList.remove('hidden');
     els.searchOverlayInput.value = state.search;
     setTimeout(() => {
       els.searchOverlayInput.focus();
@@ -1132,15 +1152,28 @@
 
   function closeSearchOverlay() {
     els.searchOverlay.classList.add('hidden');
+    if (els.searchOverlayBackdrop) els.searchOverlayBackdrop.classList.add('hidden');
     els.searchOverlayInput.value = '';
     els.searchOverlayInput.blur();
     // FIX: limpiar el filtro también del state y del input del toolbar.
     // Antes el filtro quedaba "invisible" (els.search.value vacío pero
     // state.search con valor), bloqueando la vista del directorio al
     // navegar a otra carpeta.
-    state.search = '';
-    if (els.search) els.search.value = '';
+    clearSearchState();
     renderFileList();
+  }
+
+  // Click en el backdrop cierra el overlay; click en el overlay mismo
+  // (no en el input) no propaga para evitar cierre accidental.
+  function wireSearchOverlayDismiss() {
+    if (els.searchOverlayBackdrop) {
+      els.searchOverlayBackdrop.addEventListener('click', closeSearchOverlay);
+    }
+    if (els.searchOverlay) {
+      els.searchOverlay.addEventListener('click', (e) => {
+        if (e.target !== els.searchOverlayInput) e.stopPropagation();
+      });
+    }
   }
 
   function initTheme() {

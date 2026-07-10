@@ -524,7 +524,11 @@
     @apply bg-hover;
   }
 
-  /* ===== Search overlay (Ctrl+B) ===== */
+/* ===== Search overlay (Ctrl+B) ===== */
+  .search-overlay-backdrop {
+    @apply fixed inset-0 bg-canvas/40 z-[290];
+  }
+
   .search-overlay {
     @apply fixed bottom-xl left-1/2 -translate-x-1/2 flex items-center gap-xs px-md py-sm rounded-full border border-hairline bg-elevated z-[300];
     box-shadow: var(--shadow-level-3);
