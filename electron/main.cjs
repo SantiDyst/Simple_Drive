@@ -310,6 +310,25 @@ ipcMain.handle('fs:watch', async (_e, dirPath) => {
 ipcMain.handle('app:get-drive-root', () => detectDriveRoot());
 ipcMain.handle('app:get-version', () => app.getVersion());
 ipcMain.handle('app:open-settings', () => shell.openPath(settingsPath));
+
+ipcMain.handle('fs:disk-info', async (_e, dirPath) => {
+  // Devuelve info del disco para una ruta (usado por la hero card en la vista cards).
+  try {
+    const safe = resolveInsideRoot(dirPath);
+    if (!safe) return null;
+    const stats = await fs.promises.statfs(safe);
+    return {
+      path: safe,
+      total: stats.bavail * 0 + stats.blocks * stats.bsize, // total = blocks * bsize
+      free:  stats.bavail * stats.bsize,
+      // used = total - free
+      used:  (stats.blocks - stats.bfree) * stats.bsize
+    };
+  } catch (err) {
+    log('warn', 'main', 'fs:disk-info error', { dirPath, message: err.message });
+    return null;
+  }
+});
 ipcMain.handle('shell:open-external', (_e, url) => {
   try {
     const parsed = new URL(url);

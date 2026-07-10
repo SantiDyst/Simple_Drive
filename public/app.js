@@ -15,7 +15,9 @@
     collapsedGroups: new Set(),
     fuse: null,
     fuseIndexBuiltFor: null,
-    searchDebounceTimer: null
+    searchDebounceTimer: null,
+    viewMode: 'list',          // 'list' (default, tabla) | 'cards' (vista cards validada en themes-preview)
+    diskInfo: null             // {path, used, free, total} para la hero card
   };
 
   const EXTENSION_TYPE_MAP = {
@@ -58,6 +60,43 @@
     default:   { icon: '📄', label: 'Archivo' }
   };
 
+  // Map extensión → "icon color" semántico (Figma-style: cada tipo su color).
+  // El data-color se setea como atributo; el CSS aplica `var(--color-icon-X)`.
+  // Para carpetas siempre devolvemos "folder".
+  const FILE_COLOR_MAP = {
+    // folder se maneja aparte (carpetas siempre son folder)
+    // document
+    pdf: 'document', doc: 'document', docx: 'document', txt: 'document', rtf: 'document',
+    md: 'document', odt: 'document',
+    // office (Excel/PPT/PowerPoint/CSV — todos marrones en el preview)
+    xls: 'office', xlsx: 'office', csv: 'office', ods: 'office',
+    ppt: 'office', pptx: 'office', odp: 'office',
+    // code
+    js: 'code', jsx: 'code', ts: 'code', tsx: 'code',
+    py: 'code', java: 'code', c: 'code', cpp: 'code', h: 'code',
+    html: 'code', css: 'code', json: 'code', xml: 'code', yml: 'code', yaml: 'code',
+    sql: 'code', php: 'code', rb: 'code', go: 'code', rs: 'code',
+    sh: 'code', bash: 'code',
+    // media (todos cyan en el preview)
+    png: 'media', jpg: 'media', jpeg: 'media', gif: 'media', bmp: 'media',
+    svg: 'media', webp: 'media', ico: 'media',
+    mp4: 'media', avi: 'media', mkv: 'media', mov: 'media', webm: 'media',
+    wmv: 'media', flv: 'media',
+    mp3: 'media', wav: 'media', ogg: 'media', flac: 'media',
+    m4a: 'media', aac: 'media', wma: 'media',
+    // archive
+    zip: 'archive', rar: 'archive', '7z': 'archive', tar: 'archive',
+    gz: 'archive', bz2: 'archive', xz: 'archive',
+    // exe / binarios
+    exe: 'exe', dll: 'exe', msi: 'exe'
+  };
+
+  function getFileColor(item) {
+    if (item.isDir) return 'folder';
+    if (!item.ext) return 'default';
+    return FILE_COLOR_MAP[item.ext.toLowerCase()] || 'default';
+  }
+
   function getFileType(item) {
     if (item.isDir) return 'folder';
     if (!item.ext) return 'default';
@@ -93,6 +132,7 @@
     back: document.getElementById('btn-back'),
     newFolder: document.getElementById('btn-new-folder'),
     groupBy: document.getElementById('btn-group-by'),
+    listar: document.getElementById('btn-listar'),
     sortKey: document.getElementById('sort-key'),
     sortDir: document.getElementById('sort-dir'),
     search: document.getElementById('search'),
@@ -248,6 +288,22 @@
 
     els.fileList.innerHTML = '';
 
+    // Vista cards: toggle "Listar". Renderiza hero + grid.
+    if (state.viewMode === 'cards') {
+      renderCards(sorted);
+      // Empty state se sigue manejando en el toggle
+      if (sorted.length === 0) {
+        els.emptyState.classList.remove('hidden');
+      } else {
+        els.emptyState.classList.add('hidden');
+      }
+      els.statusCount.textContent = sorted.length + ' elemento' + (sorted.length === 1 ? '' : 's');
+      els.statusPath.textContent = state.currentDir || '';
+      return;
+    }
+
+    // Vista list (default): el grid actual de file-rows
+
     const header = document.createElement('div');
     header.className = 'file-header';
     const cols = [
@@ -305,6 +361,194 @@
 
   function renderFlat(sorted) {
     sorted.forEach(item => appendRow(item));
+  }
+
+  // Vista CARDS: hero (con barra de disco) + grid de cards.
+  // Validado en docs/preview/themes-preview.html antes de implementar.
+  function renderCards(sorted) {
+    // Hero card SOLO en la raíz (Mi unidad). Muestra barra de uso de disco.
+    if (state.currentDir && state.currentDir === state.driveRoot) {
+      const hero = document.createElement('article');
+      hero.className = 'hero-card';
+      hero.dataset.color = 'folder';
+      hero.dataset.type = 'folder';
+
+      const icon = document.createElement('div');
+      icon.className = 'hero-card__icon';
+      icon.dataset.color = 'folder';
+      icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="12" x2="2" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" y1="16" x2="6.01" y2="16"/><line x1="10" y1="16" x2="10.01" y2="16"/></svg>';
+      hero.appendChild(icon);
+
+      const title = document.createElement('div');
+      title.className = 'hero-card__title-block';
+      const nameEl = document.createElement('div');
+      nameEl.className = 'hero-card__name';
+      nameEl.textContent = state.driveRoot.split(/[\\/]/).filter(Boolean).pop() || 'Mi unidad';
+      const pathEl = document.createElement('div');
+      pathEl.className = 'hero-card__path';
+      pathEl.textContent = state.driveRoot;
+      title.appendChild(nameEl);
+      title.appendChild(pathEl);
+      hero.appendChild(title);
+
+      const barWrap = document.createElement('div');
+      barWrap.className = 'hero-card__bar-wrap';
+      const barMeta = document.createElement('div');
+      barMeta.className = 'hero-card__bar-meta';
+      const barLabel = document.createElement('div');
+      barLabel.className = 'hero-card__bar-label';
+      barLabel.textContent = 'Disco usado';
+      const barValue = document.createElement('div');
+      barValue.className = 'hero-card__bar-value';
+      if (state.diskInfo && state.diskInfo.total > 0) {
+        const usedGB = Math.round(state.diskInfo.used / 1e9);
+        const totalGB = Math.round(state.diskInfo.total / 1e9);
+        const pct = Math.round((state.diskInfo.used / state.diskInfo.total) * 100);
+        barValue.textContent = usedGB + ' GB / ' + totalGB + ' GB · ' + pct + '%';
+      } else {
+        barValue.textContent = '— / —';
+      }
+      barMeta.appendChild(barLabel);
+      barMeta.appendChild(barValue);
+      const bar = document.createElement('div');
+      bar.className = 'hero-card__bar';
+      const fill = document.createElement('div');
+      fill.className = 'hero-card__bar-fill';
+      if (state.diskInfo && state.diskInfo.total > 0) {
+        const pct = Math.round((state.diskInfo.used / state.diskInfo.total) * 100);
+        fill.style.width = pct + '%';
+        if (pct >= 90) fill.dataset.level = 'danger';
+        else if (pct >= 70) fill.dataset.level = 'warning';
+      } else {
+        fill.style.width = '0%';
+      }
+      bar.appendChild(fill);
+      barWrap.appendChild(barMeta);
+      barWrap.appendChild(bar);
+      hero.appendChild(barWrap);
+
+      const open = document.createElement('button');
+      open.className = 'hero-card__action';
+      open.textContent = 'Abrir';
+      hero.appendChild(open);
+
+      hero.addEventListener('click', (e) => {
+        if (e.target.closest('button')) return;
+        // Ya estamos en la raíz, no navegar
+      });
+
+      els.fileList.appendChild(hero);
+    }
+
+    // Grid de cards: muestra los archivos en formato card.
+    // Orden por mtime desc, limit 12 para performance (preview mostraba top 4 + el resto;
+    // acá mostramos todos pero cap a 12, puedes ajustarlo).
+    const itemsToShow = sorted.slice(0, 12);
+    itemsToShow.forEach(item => appendCard(item));
+  }
+
+  function appendCard(item) {
+    const fileColor = getFileColor(item);
+    const fileType = getFileType(item);
+    const card = document.createElement('article');
+    card.className = 'file-card';
+    card.dataset.color = fileColor;
+    card.dataset.type = fileType;
+    card.dataset.path = item.path;
+
+    const head = document.createElement('div');
+    head.className = 'file-card__head';
+
+    const icon = document.createElement('div');
+    icon.className = 'file-card__icon';
+    icon.dataset.color = fileColor;
+    icon.innerHTML = cardIconSvg(fileColor);
+    head.appendChild(icon);
+
+    const title = document.createElement('div');
+    title.className = 'file-card__title-block';
+    const name = document.createElement('div');
+    name.className = 'file-card__name';
+    name.textContent = item.name;
+    title.appendChild(name);
+    const typeLabel = document.createElement('div');
+    typeLabel.className = 'file-card__type';
+    typeLabel.textContent = item.isDir ? 'Carpeta' : (TYPE_META[fileType] ? TYPE_META[fileType].label : TYPE_META.default.label);
+    title.appendChild(typeLabel);
+    head.appendChild(title);
+    card.appendChild(head);
+
+    const divider = document.createElement('div');
+    divider.className = 'file-card__divider';
+    card.appendChild(divider);
+
+    const meta = document.createElement('div');
+    meta.className = 'file-card__meta';
+    const sizeCell = document.createElement('div');
+    sizeCell.className = 'file-card__meta-cell';
+    const sizeLabel = document.createElement('div');
+    sizeLabel.className = 'file-card__meta-label';
+    sizeLabel.textContent = item.isDir ? 'Items' : 'Tamaño';
+    sizeCell.appendChild(sizeLabel);
+    const sizeValue = document.createElement('div');
+    sizeValue.className = 'file-card__meta-value';
+    sizeValue.textContent = item.isDir ? '—' : formatSize(item.size);
+    sizeCell.appendChild(sizeValue);
+    meta.appendChild(sizeCell);
+
+    const mtimeCell = document.createElement('div');
+    mtimeCell.className = 'file-card__meta-cell';
+    const mtimeLabel = document.createElement('div');
+    mtimeLabel.className = 'file-card__meta-label';
+    mtimeLabel.textContent = 'Modificado';
+    mtimeCell.appendChild(mtimeLabel);
+    const mtimeValue = document.createElement('div');
+    mtimeValue.className = 'file-card__meta-value';
+    mtimeValue.textContent = formatDate(item.mtime);
+    mtimeCell.appendChild(mtimeValue);
+    meta.appendChild(mtimeCell);
+    card.appendChild(meta);
+
+    const actions = document.createElement('div');
+    actions.className = 'file-card__actions';
+    const open = document.createElement('button');
+    open.className = 'file-card__action file-card__action--primary';
+    open.textContent = 'Abrir';
+    open.onclick = (e) => { e.stopPropagation(); if (item.isDir) navigate(item.path); else window.driveman.fs.openFile(item.path).catch(err => toast(err.message, 'error')); };
+    actions.appendChild(open);
+    const copy = document.createElement('button');
+    copy.className = 'file-card__action';
+    copy.textContent = 'Copiar ruta';
+    copy.onclick = (e) => { e.stopPropagation(); copyPath(item); };
+    actions.appendChild(copy);
+    card.appendChild(actions);
+
+    // Click en la card (no en un botón) abre el item
+    card.addEventListener('click', () => {
+      if (item.isDir) navigate(item.path);
+      else window.driveman.fs.openFile(item.path).catch(err => toast(err.message, 'error'));
+    });
+
+    els.fileList.appendChild(card);
+  }
+
+  // Retorna el SVG según el file color (Figma-style icons).
+  function cardIconSvg(fileColor) {
+    const COMMON_SVG_HEAD = 'xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"';
+    const PATHS = {
+      folder:    '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+      document:  '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>',
+      office:    '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="12" y1="13" x2="12" y2="21"/>',
+      code:      '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m10 13-1.5 1.5 1.5 1.5"/><path d="m14 13 1.5 1.5-1.5 1.5"/>',
+      media:     '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m10 11 5 3-5 3v-6Z"/>',
+      audio:     '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M10 11 5 6 5 8 3 8 3 16 5 16 5 18 10 13"/>',
+      archive:   '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><rect x="8" y="12" width="8" height="8" rx="1"/>',
+      exe:       '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><circle cx="12" cy="14" r="2"/>',
+      video:     '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m10 11 5 3-5 3v-6Z"/>',
+      default:   '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/>'
+    };
+    const PATH = PATHS[fileColor] || PATHS.default;
+    return '<svg ' + COMMON_SVG_HEAD + '>' + PATH + '</svg>';
   }
 
   function renderGrouped(sorted) {
@@ -458,7 +702,22 @@
     state.search = '';
     if (els.search) els.search.value = '';
     if (els.searchOverlayInput) els.searchOverlayInput.value = '';
+    // Limpiar diskInfo al navegar fuera de la raíz
+    state.diskInfo = null;
     await loadCurrent();
+    await loadDiskInfoIfRoot();
+  }
+
+  async function loadDiskInfoIfRoot() {
+    if (!state.driveRoot || state.currentDir !== state.driveRoot) return;
+    if (!window.driveman.fs.diskInfo) return;
+    try {
+      state.diskInfo = await window.driveman.fs.diskInfo(state.currentDir);
+      if (state.viewMode === 'cards') renderFileList();
+    } catch (err) {
+      // Silenciar: el hero card mostrará "— / —"
+      log('warn', 'main', 'diskInfo failed', { err: err.message });
+    }
   }
 
   async function goBack() {
@@ -772,6 +1031,16 @@
       els.groupBy.classList.toggle('btn--active', state.groupBy);
       renderFileList();
     };
+    // Toggle "Listar": alterna entre vista tabla (list) y vista cards.
+    // El botón persiste su estado con aria-pressed + btn--active.
+    if (els.listar) {
+      els.listar.onclick = () => {
+        state.viewMode = state.viewMode === 'cards' ? 'list' : 'cards';
+        els.listar.setAttribute('aria-pressed', String(state.viewMode === 'cards'));
+        els.listar.classList.toggle('btn--active', state.viewMode === 'cards');
+        renderFileList();
+      };
+    }
     els.sortKey.onchange = () => {
       state.sortKey = els.sortKey.value;
       renderFileList();

@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('driveman', {
     openFile: (filePath) => ipcRenderer.invoke('fs:open-file', filePath),
     rename: (oldPath, newPath) => ipcRenderer.invoke('fs:rename', oldPath, newPath),
     watch: (dirPath) => ipcRenderer.invoke('fs:watch', dirPath),
+    diskInfo: (dirPath) => ipcRenderer.invoke('fs:disk-info', dirPath),
     onChanged: (cb) => ipcRenderer.on('fs:changed', (_e, data) => cb(data))
   },
   app: {

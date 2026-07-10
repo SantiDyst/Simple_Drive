@@ -569,3 +569,187 @@
     @apply bg-primary text-on-primary text-[14px] font-medium px-md py-sm;
   }
 }
+  /* ============================================================
+   * VISTA CARDS (toggle Listar)
+   * Validada visualmente en docs/preview/themes-preview.html.
+   * Las cards usan border-color por data-color (Folder/Document/etc.)
+   * via los tokens --color-icon-* del theme.
+   * ============================================================ */
+
+  .cards-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 12px;
+    padding: 24px;
+    max-width: 1024px;
+    margin: 0 auto;
+  }
+
+  /* Hero card (Mi unidad) */
+  .hero-card {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    min-height: 120px;
+    background-color: var(--color-elevated);
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--color-icon-folder);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: border-color 150ms;
+  }
+  .hero-card:hover { border-color: var(--color-muted); }
+  .hero-card__icon {
+    width: 64px;
+    height: 64px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-surface);
+    border-radius: 12px;
+    flex-shrink: 0;
+    color: var(--color-icon-folder);
+  }
+  .hero-card__title-block { flex: 1; min-width: 0; }
+  .hero-card__name {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+  .hero-card__path {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .hero-card__bar-wrap { flex: 1.5; min-width: 200px; }
+  .hero-card__bar-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .hero-card__bar-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+  }
+  .hero-card__bar-value {
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+  .hero-card__bar {
+    height: 6px;
+    background-color: var(--color-border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .hero-card__bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, rgb(139, 92, 246), rgb(96, 165, 250));
+    border-radius: 4px;
+    transition: width 300ms ease;
+  }
+  .hero-card__bar-fill[data-level='warning'] { background: linear-gradient(90deg, rgb(245, 158, 11), rgb(234, 179, 8)); }
+  .hero-card__bar-fill[data-level='danger']  { background: linear-gradient(90deg, rgb(239, 68, 68), rgb(220, 38, 38)); }
+  .hero-card__action {
+    padding: 6px 14px;
+    background-color: var(--color-hover);
+    border: 0;
+    border-radius: 9999px;
+    color: var(--color-text);
+    font-size: 12px;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .hero-card__action:hover { background-color: var(--color-active); }
+
+  /* Cards regulares */
+  .file-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    min-height: 200px;
+    background-color: var(--color-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: border-color 150ms;
+  }
+  .file-card:hover { border-color: var(--color-muted); }
+  .file-card__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .file-card__icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--color-text-secondary);
+  }
+  .file-card__icon[data-color='folder']    { color: var(--color-icon-folder); }
+  .file-card__icon[data-color='document']  { color: var(--color-icon-document); }
+  .file-card__icon[data-color='office']    { color: var(--color-icon-office); }
+  .file-card__icon[data-color='code']      { color: var(--color-icon-code); }
+  .file-card__icon[data-color='media']     { color: var(--color-icon-media); }
+  .file-card__icon[data-color='audio']     { color: var(--color-icon-audio); }
+  .file-card__icon[data-color='archive']   { color: var(--color-icon-archive); }
+  .file-card__icon[data-color='exe']       { color: var(--color-icon-exe); }
+  .file-card__icon[data-color='video']     { color: var(--color-icon-video); }
+  .file-card__title-block { flex: 1; min-width: 0; }
+  .file-card__name {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .file-card__type {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+  }
+  .file-card__divider {
+    height: 1px;
+    background-color: var(--color-border);
+    margin-block: 4px;
+  }
+  .file-card__meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 12px;
+  }
+  .file-card__meta-cell { display: flex; flex-direction: column; gap: 2px; }
+  .file-card__meta-label { font-size: 10px; color: var(--color-text-muted); }
+  .file-card__meta-value { font-size: 13px; color: var(--color-text); }
+  .file-card__actions { display: flex; gap: 8px; margin-top: auto; }
+  .file-card__action {
+    flex: 1;
+    padding: 6px 12px;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 9999px;
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    text-align: center;
+  }
+  .file-card__action:hover { background-color: var(--color-hover); color: var(--color-text); }
+  .file-card__action--primary {
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+    border-color: var(--color-primary);
+  }
+  .file-card__action--primary:hover { opacity: 0.85; }
