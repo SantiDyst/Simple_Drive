@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Driveman — Preview: Theme dark Figma + light cream</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ===== TOKENS COMPARTIDOS (spacing, radius, fonts, shadows) ===== */
+    :root {
+      --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --spacing-xs: 8px;
+      --spacing-sm: 12px;
+      --spacing-md: 16px;
+      --spacing-lg: 20px;
+      --spacing-xl: 24px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --radius-full: 9999px;
+      --shadow-level-2: 0 4px 6px 0 rgba(0,0,0,0.08);
+      --shadow-level-3: 0 0 22px 0 rgba(0,0,0,0.08);
+    }
+
+    /* ===== THEME DARK (Figma style) ===== */
+    .theme-dark {
+      --color-bg: #0e0e1a;
+      --color-canvas: #0e0e1a;
+      --color-surface: #14141f;
+      --color-surface-soft: #1a1a2e;
+      --color-elevated: rgba(255,255,255,0.04);
+      --color-border: rgba(255,255,255,0.07);
+      --color-border-strong: rgba(255,255,255,0.12);
+      --color-hover: rgba(255,255,255,0.06);
+      --color-active: rgba(255,255,255,0.10);
+      --color-text: white;
+      --color-text-secondary: rgba(255,255,255,0.50);
+      --color-text-muted: rgba(255,255,255,0.30);
+      --color-ink: white;
+      --color-primary: white;
+      --color-on-primary: #0e0e1a;
+      --color-type-sensitive: #f87171;
+      --color-type-binary: #fb923c;
+      --color-type-office: #ca8a04;
+      --color-type-docs: #facc15;
+      --color-type-media: #60a5fa;
+      --color-type-default: rgba(255,255,255,0.40);
+      --color-type-folder: rgba(255,255,255,0.40);
+      /* Icon colors per file type (Figma-style: cada tipo su color) */
+      --color-icon-folder:    #fbbf24;
+      --color-icon-document:  #60a5fa;
+      --color-icon-office:    #10b981;
+      --color-icon-code:      #22d3ee;
+      --color-icon-image:     #d946ef;
+      --color-icon-video:     #f87171;
+      --color-icon-audio:     #a78bfa;
+      --color-icon-archive:   #94a3b8;
+      --color-icon-exe:       #71717a;
+    }
+
+    /* ===== THEME LIGHT (estilo cream, Figma-like pero cálido) ===== */
+    .theme-cream {
+      --color-bg: #faf7f1;          /* fondo crema cálido */
+      --color-canvas: #faf7f1;
+      --color-surface: #f3ede1;      /* surface más oscuro */
+      --color-surface-soft: #ebe3d2;
+      --color-elevated: #ffffff;     /* cards blancas */
+      --color-border: #e8e0cf;      /* border beige */
+      --color-border-strong: #d4cab2;
+      --color-hover: #f0e9d9;       /* hover sutil */
+      --color-active: #e6dcc4;
+      --color-text: #2a2418;        /* texto marrón oscuro */
+      --color-text-secondary: #6b5f47;
+      --color-text-muted: #8e8268;
+      --color-ink: #2a2418;
+      --color-primary: #1a1610;      /* primary casi negro */
+      --color-on-primary: #faf7f1;
+      --color-type-sensitive: #b91c1c;
+      --color-type-binary: #c2410c;
+      --color-type-office: #854d0e;
+      --color-type-docs: #a16207;
+      --color-type-media: #1d4ed8;
+      --color-type-default: #94a3b8;
+      --color-type-folder: #b08968;
+      /* Icon colors per file type — tonos más apagados para que no chillen sobre crema */
+      --color-icon-folder:    #d97706;
+      --color-icon-document:  #2563eb;
+      --color-icon-office:    #047857;
+      --color-icon-code:      #0891b2;
+      --color-icon-image:     #a21caf;
+      --color-icon-video:     #b91c1c;
+      --color-icon-audio:     #6d28d9;
+      --color-icon-archive:   #475569;
+      --color-icon-exe:       #44403c;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      min-height: 100vh;
+      overflow: auto;
+    }
+
+    /* Background decorativo solo en dark */
+    .theme-dark::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 25%;
+      width: 24rem;
+      height: 24rem;
+      background: rgba(124, 58, 237, 0.10);
+      border-radius: 50%;
+      filter: blur(64px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .preview-banner {
+      position: relative;
+      z-index: 1000;
+      background: #fef3c7;
+      color: #78350f;
+      border-bottom: 2px solid #f59e0b;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+    }
+    .preview-banner strong { font-weight: 600; }
+    .preview-banner button {
+      margin-left: auto;
+      padding: 4px 12px;
+      border: 1px solid currentColor;
+      border-radius: 9999px;
+      background: transparent;
+      color: inherit;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .preview-banner button + button { margin-left: 8px; }
+    .preview-banner button:hover { background: rgba(0,0,0,0.05); }
+
+    /* Layout principal */
+    #app {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--color-border);
+      background-color: var(--color-surface);
+    }
+    .header__title {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+    .breadcrumb {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--color-text-secondary);
+    }
+    .breadcrumb__item {
+      background: transparent;
+      border: 0;
+      color: inherit;
+      cursor: pointer;
+      padding: 4px 8px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    .breadcrumb__item:hover { color: var(--color-text); }
+    .breadcrumb__sep { color: var(--color-text-muted); }
+    .breadcrumb__current { padding: 4px 8px; color: var(--color-text); font-weight: 500; }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--color-border);
+      background-color: var(--color-bg);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--color-border);
+      background-color: var(--color-elevated);
+      color: var(--color-text);
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 150ms;
+    }
+    .btn:hover { background-color: var(--color-hover); }
+    .btn-primary {
+      background-color: var(--color-primary);
+      color: var(--color-on-primary);
+      border-color: var(--color-primary);
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn--active {
+      background-color: rgba(124, 58, 237, 0.20);
+      color: rgb(196, 181, 253);
+      border-color: rgba(124, 58, 237, 0.30);
+    }
+    .theme-cream .btn--active {
+      background-color: rgba(124, 58, 237, 0.15);
+      color: rgb(91, 33, 182);
+      border-color: rgba(124, 58, 237, 0.30);
+    }
+    .search {
+      flex: 1;
+      max-width: 300px;
+      margin-left: auto;
+      padding: 6px 12px;
+      background-color: var(--color-elevated);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      color: var(--color-text);
+      font-size: 13px;
+      font-family: inherit;
+    }
+    .search:focus { outline: none; border-color: rgba(124, 58, 237, 0.50); }
+    .search::placeholder { color: var(--color-text-muted); }
+
+    /* Main */
+    main {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .cards-view {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 12px;
+      max-width: 1024px;
+      margin: 0 auto;
+    }
+
+    /* Hero card */
+    .hero-card {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      min-height: 120px;
+      background-color: var(--color-elevated);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      cursor: pointer;
+      transition: all 150ms;
+    }
+    .hero-card:hover { border-color: var(--color-border-strong); }
+    .hero-card__icon {
+      width: 64px;
+      height: 64px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--color-hover);
+      border-radius: 12px;
+      flex-shrink: 0;
+      color: var(--color-text-secondary);
+    }
+    .hero-card__title-block { flex: 1; min-width: 0; }
+    .hero-card__name {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+    .hero-card__path {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .hero-card__bar-wrap { flex: 1.5; min-width: 200px; }
+    .hero-card__bar-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+    .hero-card__bar-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+    }
+    .hero-card__bar-value {
+      font-size: 12px;
+      color: var(--color-text-muted);
+    }
+    .hero-card__bar {
+      height: 6px;
+      background-color: var(--color-border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .hero-card__bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, rgb(139, 92, 246), rgb(96, 165, 250));
+      border-radius: 4px;
+    }
+    .hero-card__action {
+      padding: 6px 14px;
+      background-color: var(--color-hover);
+      border: 0;
+      border-radius: var(--radius-full);
+      color: var(--color-text);
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .hero-card__action:hover { background-color: var(--color-active); }
+
+    /* Cards regulares */
+    .file-card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 16px;
+      min-height: 200px;
+      background-color: var(--color-elevated);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      cursor: pointer;
+      transition: all 150ms;
+    }
+    .file-card:hover { border-color: var(--color-border-strong); }
+    .file-card__head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .file-card__icon {
+      width: 48px;
+      height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--color-text-secondary);
+    }
+    .file-card__title-block { flex: 1; min-width: 0; }
+    .file-card__name {
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .file-card__type {
+      font-size: 11px;
+      color: var(--color-text-muted);
+      margin-top: 2px;
+    }
+    .file-card__divider {
+      height: 1px;
+      background-color: var(--color-border);
+      margin-block: 4px;
+    }
+    .file-card__meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 12px;
+    }
+    .file-card__meta-cell { display: flex; flex-direction: column; gap: 2px; }
+    .file-card__meta-label { font-size: 10px; color: var(--color-text-muted); }
+    .file-card__meta-value { font-size: 13px; color: var(--color-text); }
+    .file-card__actions { display: flex; gap: 8px; margin-top: auto; }
+    .file-card__action {
+      flex: 1;
+      padding: 6px 12px;
+      background-color: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-full);
+      color: var(--color-text-secondary);
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      text-align: center;
+    }
+    .file-card__action:hover { background-color: var(--color-hover); color: var(--color-text); }
+    .file-card__action--primary {
+      background-color: var(--color-primary);
+      color: var(--color-on-primary);
+      border-color: var(--color-primary);
+    }
+    .file-card__action--primary:hover { opacity: 0.85; }
+
+    /* Footer */
+    .statusbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 16px;
+      border-top: 1px solid var(--color-border);
+      background-color: var(--color-surface);
+      font-size: 12px;
+      color: var(--color-text-secondary);
+    }
+
+    .file-row {
+      display: grid;
+      grid-template-columns: 1fr 100px 100px 160px 40px;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--color-border);
+      cursor: default;
+      font-size: 13px;
+    }
+    .file-row:hover { background-color: var(--color-hover); }
+    .file-row[data-type='docs']   { border-left: 4px solid var(--color-type-docs); }
+    .file-row[data-type='office'] { border-left: 4px solid var(--color-type-office); }
+
+    /* Icon colors per file-type (Figma-style) — separados de la jerarquía de sensibilidad */
+    .file-card__icon[data-color="folder"]    { color: var(--color-icon-folder); }
+    .file-card__icon[data-color="document"]  { color: var(--color-icon-document); }
+    .file-card__icon[data-color="office"]    { color: var(--color-icon-office); }
+    .file-card__icon[data-color="code"]      { color: var(--color-icon-code); }
+    .file-card__icon[data-color="image"]     { color: var(--color-icon-image); }
+    .file-card__icon[data-color="video"]     { color: var(--color-icon-video); }
+    .file-card__icon[data-color="audio"]     { color: var(--color-icon-audio); }
+    .file-card__icon[data-color="archive"]   { color: var(--color-icon-archive); }
+    .file-card__icon[data-color="exe"]       { color: var(--color-icon-exe); }
+    .hero-card__icon[data-color="folder"]    { color: var(--color-icon-folder); }
+  </style>
+</head>
+<body class="theme-dark">
+
+<div class="preview-banner">
+  <span>⚠ <strong>PREVIEW: Theme dark (Figma) + theme cream (cálido)</strong>. Toggle abajo para alternar.</span>
+  <button id="toggle-theme">Cambiar theme: dark ↔ cream</button>
+</div>
+
+<div id="app">
+  <header class="header">
+    <h1 class="header__title">Driveman</h1>
+    <nav class="breadcrumb">
+      <button class="breadcrumb__item">Mi unidad</button>
+      <span class="breadcrumb__sep">›</span>
+      <span class="breadcrumb__current">proyectos</span>
+    </nav>
+  </header>
+
+  <section class="toolbar">
+    <button class="btn btn-primary">Nueva carpeta</button>
+    <button class="btn btn--active">Listar</button>
+    <input class="search" type="text" placeholder="Filtrar…">
+  </section>
+
+  <main>
+    <div class="cards-view">
+      <article class="hero-card">
+        <div class="hero-card__icon" data-color="folder">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="12" x2="2" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" y1="16" x2="6.01" y2="16"/><line x1="10" y1="16" x2="10.01" y2="16"/></svg>
+        </div>
+        <div class="hero-card__title-block">
+          <div class="hero-card__name">Mi unidad</div>
+          <div class="hero-card__path">G:\Mi unidad</div>
+        </div>
+        <div class="hero-card__bar-wrap">
+          <div class="hero-card__bar-meta">
+            <div class="hero-card__bar-label">Disco usado</div>
+            <div class="hero-card__bar-value">234 GB / 500 GB</div>
+          </div>
+          <div class="hero-card__bar">
+            <div class="hero-card__bar-fill" style="width: 47%"></div>
+          </div>
+        </div>
+        <button class="hero-card__action">Abrir</button>
+      </article>
+
+      <article class="file-card" data-type="docs">
+        <div class="file-card__head">
+          <div class="file-card__icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+          </div>
+          <div class="file-card__title-block">
+            <div class="file-card__icon" data-color="document">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+          </div>
+          <div class="file-card__title-block">
+            <div class="file-card__name">informe-q3-2026.pdf</div>
+            <div class="file-card__type">Documento</div>
+          </div>
+        </div>
+        <div class="file-card__divider"></div>
+        <div class="file-card__meta">
+          <div class="file-card__meta-cell">
+            <div class="file-card__meta-label">Tamaño</div>
+            <div class="file-card__meta-value">1.2 MB</div>
+          </div>
+          <div class="file-card__meta-cell">
+            <div class="file-card__meta-label">Modificado</div>
+            <div class="file-card__meta-value">hace 2 h</div>
+          </div>
+        </div>
+        <div class="file-card__actions">
+          <button class="file-card__action file-card__action--primary">Abrir</button>
+          <button class="file-card__action">Copiar ruta</button>
+        </div>
+      </article>
+
+      <article class="file-card" data-type="office">
+        <div class="file-card__head">
+          <div class="file-card__icon" data-color="office">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="12" y1="13" x2="12" y2="21"/></svg>
+          </div>
+          <div class="file-card__title-block">
+            <div class="file-card__name">presupuesto-final.xlsx</div>
+            <div class="file-card__type">Office</div>
+          </div>
+        </div>
+        <div class="file-card__divider"></div>
+        <div class="file-card__meta">
+          <div class="file-card__meta-cell">
+            <div class="file-card__meta-label">Tamaño</div>
+            <div class="file-card__meta-value">48 KB</div>
+          </div>
+          <div class="file-card__meta-cell">
+            <div class="file-card__meta-label">Modificado</div>
+            <div class="file-card__meta-value">ayer</div>
+          </div>
+        </div>
+        <div class="file-card__actions">
+          <button class="file-card__action file-card__action--primary">Abrir</button>
+          <button class="file-card__action">Copiar ruta</button>
+        </div>
+      </article>
+
+      <article class="file-card" data-type="docs">
+        <div class="file-card__head">
+          <div class="file-card__icon" data-color="code">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m10 13-1.5 1.5 1.5 1.5"/><path d="m14 13 1.5 1.5-1.5 1.5"/></svg>
+          </div>
+          <div class="file-card__title-block">
+            <div class="file-card__name">app.js</div>
+            <div class="file-card__type">Sistema</div>
+          </div>
+        </div>
+        <div class="file-card__divider"></div>
+        <div class="file-card__meta">
+          <div class="file-card__meta-cell">
+            <div class="file-card__meta-label">Tamaño</div>
+            <div class="file-card__meta-value">14 KB</div>
+          </div>
+          <div class="file-card__meta-cell">
+            <div class="file-card__meta-label">Modificado</div>
+            <div class="file-card__meta-value">hoy</div>
+          </div>
+        </div>
+        <div class="file-card__actions">
+          <button class="file-card__action file-card__action--primary">Abrir</button>
+          <button class="file-card__action">Copiar ruta</button>
+        </div>
+      </article>
+
+      <article class="file-card" data-type="media">
+        <div class="file-card__head">
+          <div class="file-card__icon" data-color="video">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m10 11 5 3-5 3v-6Z"/></svg>
+          </div>
+          <div class="file-card__title-block">
+            <div class="file-card__name">intro-v2.mp4</div>
+            <div class="file-card__type">Media</div>
+          </div>
+        </div>
+        <div class="file-card__divider"></div>
+        <div class="file-card__meta">
+          <div class="file-card__meta-cell">
+            <div class="file-card__meta-label">Tamaño</div>
+            <div class="file-card__meta-value">14 MB</div>
+          </div>
+          <div class="file-card__meta-cell">
+            <div class="file-card__meta-label">Modificado</div>
+            <div class="file-card__meta-value">hace 1 sem</div>
+          </div>
+        </div>
+        <div class="file-card__actions">
+          <button class="file-card__action file-card__action--primary">Abrir</button>
+          <button class="file-card__action">Copiar ruta</button>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <footer class="statusbar">
+    <span>6 elementos</span>
+    <span class="muted">G:\Mi unidad\proyectos</span>
+  </footer>
+</div>
+
+<script>
+  const themes = ['theme-dark', 'theme-cream'];
+  let idx = 0;
+  document.getElementById('toggle-theme').addEventListener('click', () => {
+    document.body.classList.remove(themes[idx]);
+    idx = (idx + 1) % themes.length;
+    document.body.classList.add(themes[idx]);
+  });
+</script>
+
+</body>
+</html>

@@ -796,10 +796,11 @@
       }
     });
     els.themeToggle.onclick = () => {
-      const isDark = document.documentElement.classList.toggle('dark');
-      try { localStorage.setItem('driveman.theme', isDark ? 'dark' : 'light'); } catch {}
-      els.themeToggle.textContent = isDark ? '☾' : '☼';
-      els.themeToggle.title = isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro';
+      // Toggle entre dark (default) y cream (override). Dark no necesita clase.
+      const isCream = document.documentElement.classList.toggle('theme-cream');
+      try { localStorage.setItem('driveman.theme', isCream ? 'cream' : 'dark'); } catch {}
+      els.themeToggle.textContent = isCream ? '☼' : '☾';
+      els.themeToggle.title = isCream ? 'Cambiar a tema oscuro' : 'Cambiar a tema claro';
     };
     els.searchOverlayInput.addEventListener('input', () => {
       state.search = els.searchOverlayInput.value;
@@ -863,17 +864,17 @@
   function initTheme() {
     let saved = null;
     try { saved = localStorage.getItem('driveman.theme'); } catch {}
-    let isDark = false;
-    if (saved === 'dark') isDark = true;
-    else if (saved === 'light') isDark = false;
-    else isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-      els.themeToggle.textContent = '☾';
-      els.themeToggle.title = 'Cambiar a tema claro';
-    } else {
+    // Dark es el default (Figma). Cream es el override.
+    // Compat: 'light' guardado se sigue respetando como cream.
+    const isCream = saved === 'cream' || saved === 'light';
+    if (isCream) {
+      document.documentElement.classList.add('theme-cream');
       els.themeToggle.textContent = '☼';
       els.themeToggle.title = 'Cambiar a tema oscuro';
+    } else {
+      document.documentElement.classList.remove('theme-cream');
+      els.themeToggle.textContent = '☾';
+      els.themeToggle.title = 'Cambiar a tema claro';
     }
   }
 

@@ -1,0 +1,145 @@
+/* ============================================================
+ * THEME: FIGMA (sustituye a minimax)
+ * ============================================================
+ * Dark mode por default (estilo Figma: dark navy + opacities).
+ * Cream como alterno (paleta cálida tipo "papel", sin blurs).
+ *
+ * Estructura:
+ *   @theme { }              tokens default (dark) + numéricos compartidos
+ *   .theme-cream { }        override para el tema claro/cream
+ *   :root { }               compat: define bg/text/elevated/etc. como aliases
+ *
+ * Uso:
+ *   default = dark    → <html>            (sin clase)
+ *   cream           → <html class="theme-cream">
+ * ============================================================ */
+
+@theme {
+  /* Brand & accent */
+  --color-brand-coral: #ff5530;
+  --color-brand-magenta: #ea5ec1;
+  --color-brand-blue: #1456f0;
+  --color-brand-blue-mid: #3b82f6;
+  --color-brand-blue-deep: #1d4ed8;
+  --color-brand-blue-700: #17437d;
+  --color-brand-cyan: #3daeff;
+  --color-brand-blue-200: #bfdbfe;
+  --color-brand-purple: #a855f7;
+
+  /* Surface (dark, Figma style) */
+  --color-canvas: #0e0e1a;
+  --color-surface: #14141f;
+  --color-surface-soft: #1a1a2e;
+  --color-hairline: rgba(255,255,255,0.07);
+  --color-hairline-soft: rgba(255,255,255,0.04);
+
+  /* Text */
+  --color-ink: #ffffff;
+  --color-ink-strong: #ffffff;
+  --color-charcoal: rgba(255,255,255,0.80);
+  --color-slate: rgba(255,255,255,0.50);
+  --color-steel: rgba(255,255,255,0.40);
+  --color-stone: rgba(255,255,255,0.30);
+  --color-muted: rgba(255,255,255,0.20);
+
+  /* Primary */
+  --color-primary: #ffffff;
+  --color-on-primary: #0e0e1a;
+  --color-primary-soft: rgba(255,255,255,0.10);
+
+  /* Semantic */
+  --color-success-bg: #064e3b;
+  --color-success-text: #6ee7b7;
+  --color-danger: #f87171;
+  --color-warning: #fbbf24;
+
+  /* Type colors (jerarquía de 6 niveles) */
+  --color-type-sensitive: #f87171;
+  --color-type-binary: #fb923c;
+  --color-type-office: #ca8a04;
+  --color-type-docs: #facc15;
+  --color-type-media: #60a5fa;
+  --color-type-default: rgba(255,255,255,0.40);
+
+  /* Icon colors per file type (Figma-style: cada tipo su color) */
+  --color-icon-folder:    #fbbf24;
+  --color-icon-document:  #60a5fa;
+  --color-icon-office:    #10b981;
+  --color-icon-code:      #22d3ee;
+  --color-icon-image:     #d946ef;
+  --color-icon-video:     #f87171;
+  --color-icon-audio:     #a78bfa;
+  --color-icon-archive:   #94a3b8;
+  --color-icon-exe:       #71717a;
+
+  /* Compat aliases: el HTML/CSS usa bg-bg, text-text, bg-elevated, border-border.
+   * Definidos aquí (no en :root) para que Tailwind v4 los reconozca como utilities. */
+  --color-bg: var(--color-canvas);
+  --color-text: var(--color-ink);
+  --color-text-secondary: var(--color-slate);
+  --color-text-muted: var(--color-muted);
+  --color-elevated: var(--color-surface);
+  --color-border: var(--color-hairline);
+  --color-hover: var(--color-surface-soft);
+  --color-active: var(--color-hairline);
+}
+
+/* ----- Cream: override cálido tipo "papel" ----- */
+.theme-cream {
+  --color-canvas: #faf7f1;
+  --color-surface: #f3ede1;
+  --color-surface-soft: #ebe3d2;
+  --color-hairline: #e8e0cf;
+  --color-hairline-soft: #f0e9d9;
+
+  --color-ink: #2a2418;
+  --color-ink-strong: #1a1610;
+  --color-charcoal: #2a2418;
+  --color-slate: #6b5f47;
+  --color-steel: #8e8268;
+  --color-stone: #b08968;
+  --color-muted: #a59781;
+
+  --color-primary: #1a1610;
+  --color-on-primary: #faf7f1;
+  --color-primary-soft: #2a2418;
+
+  --color-success-bg: #e8ffea;
+  --color-success-text: #1ba673;
+  --color-danger: #b91c1c;
+  --color-warning: #a16207;
+
+  /* Type colors más apagados para que no chillen sobre cream */
+  --color-type-sensitive: #b91c1c;
+  --color-type-binary: #c2410c;
+  --color-type-office: #854d0e;
+  --color-type-docs: #a16207;
+  --color-type-media: #1d4ed8;
+  --color-type-default: #94a3b8;
+
+  /* Icon colors — tonos más apagados */
+  --color-icon-folder:    #d97706;
+  --color-icon-document:  #2563eb;
+  --color-icon-office:    #047857;
+  --color-icon-code:      #0891b2;
+  --color-icon-image:     #a21caf;
+  --color-icon-video:     #b91c1c;
+  --color-icon-audio:     #6d28d9;
+  --color-icon-archive:   #475569;
+  --color-icon-exe:       #44403c;
+}
+
+/* ----- Compat: aliases que el HTML/CSS de Driveman ya usan ----- */
+:root {
+  --color-bg: var(--color-canvas);
+  --color-text: var(--color-ink);
+  --color-text-secondary: var(--color-slate);
+  --color-text-muted: var(--color-muted);
+  --color-elevated: var(--color-surface);
+  --color-border: var(--color-hairline);
+  --color-hover: var(--color-surface-soft);
+  --color-active: var(--color-hairline);
+}
+
+/* aliases dentro de @theme para que Tailwind v4 los exponga como utilities */
+/* (no es necesario un bloque :root separado � los aliases ya est�n arriba) */

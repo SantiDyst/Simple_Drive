@@ -1,10 +1,14 @@
 # Themes
 
-Este directorio contiene los **themes** visuales de Driveman. Cada theme define la paleta semántica (colores, surfaces, text hierarchy, semantic states) y el dark mode derivado.
+Este directorio contiene los **themes** visuales de Driveman. Cada theme define la paleta semántica (colores, surfaces, text hierarchy, semantic states) y el override del claro cuando aplica.
 
-## Estructura de un theme
+## Theme activo
 
-Un theme es un archivo CSS que define tokens dentro de `@theme { }` y `.dark { }`. Los nombres de tokens están estandarizados:
+- **`figma.css`** — Estilo Figma, sustituye al anterior `minimax.css`. Dark navy como default + cream (cálido) como alterno, ambos comparten el sistema de tokens numéricos de `tokens.css`.
+
+## Estructura del theme
+
+Un theme es un archivo CSS que define tokens dentro de `@theme { }` y un override opcional. Los nombres de tokens están estandarizados:
 
 | Categoría | Tokens | Uso |
 |---|---|---|
@@ -13,30 +17,34 @@ Un theme es un archivo CSS que define tokens dentro de `@theme { }` y `.dark { }
 | **Text** | `ink`, `ink-strong`, `charcoal`, `slate`, `steel`, `stone`, `muted` | Jerarquía tipográfica |
 | **Primary** | `primary`, `on-primary`, `primary-soft` | CTA dominante |
 | **Semantic** | `success-bg`, `success-text`, `danger`, `warning` | Estados |
-| **Type colors** | `type-doc`, `type-sheet`, `type-image`, `type-video`, etc. | Encoding por tipo de archivo (border-l en `.file-row`) |
+| **Type colors** | `type-sensitive`, `type-binary`, `type-office`, `type-docs`, `type-media`, `type-default` | Encoding por tipo de archivo (border-l en `.file-row` / `.file-card`) |
+| **Icon colors** | `icon-folder`, `icon-document`, `icon-office`, `icon-code`, `icon-image`, `icon-video`, `icon-audio`, `icon-archive`, `icon-exe` | Color del icono en cards (Figma-style: cada tipo su color) |
 | **Aliases** | `bg`, `text`, `text-secondary`, `text-muted`, `elevated`, `border`, `hover`, `active` | Compatibilidad con clases BEM/Tailwind existentes |
 
-## Themes disponibles
+## Cómo funciona el switching
 
-- **`minimax.css`** (default) — Inspirado en el design system MiniMax. Primary negro, surfaces claras/oscuras bien diferenciadas, brand colors saturados.
+- **Default** = dark Figma (sin clase en `<html>`)
+- **Cream** = override (clase `.theme-cream` en `<html>`)
+- Toggle en `app.js#initTheme` y `app.js#themeToggle.onclick` aplica la clase
+- LocalStorage guarda `'dark'` o `'cream'`
 
 ## Cómo agregar un theme nuevo
 
-1. Copiá `minimax.css` como base: `themes/mi-nuevo-theme.css`
-2. Cambiá los valores de los tokens (NO los nombres, NO agregar nuevos)
+1. Copiá `figma.css` como base: `themes/mi-nuevo-theme.css`
+2. Modificá solo los tokens de color (palette, surfaces, text); los numéricos vienen de `../tokens.css` y son compartidos
 3. En `styles.src.css`, cambiá el `@import` del theme:
 
    ```css
    @import "./styles/themes/mi-nuevo-theme.css";
    ```
 
-4. Si querés que coexistan (ej. demo a clientes), agregá el theme con clase en `<html>`:
+4. Si querés que coexistan (ej. theme picker), wrappeá el theme en una clase:
 
-   ```html
-   <html class="theme-mi-nuevo-theme">
+   ```css
+   .theme-mi-nuevo { ...tokens... }
    ```
 
-   Y wrappeá el theme en `:root.theme-mi-nuevo-theme { }` en vez de `:root { }`.
+   Y aplicá `<html class="theme-mi-nuevo">`.
 
 ## Lo que NO se cambia en un theme
 
@@ -45,4 +53,4 @@ Un theme es un archivo CSS que define tokens dentro de `@theme { }` y `.dark { }
 - Tokens numéricos (`tokens.css` no se toca)
 - Clases BEM o nombres del DOM (`.file-row`, `.btn`, etc.)
 
-Un theme es **solo colores y dark mode**. Si querés cambiar espaciados o radios, eso es un cambio de tokens numéricos.
+Un theme es **solo colores**. Si querés cambiar espaciados o radios, eso es un cambio de tokens numéricos.

@@ -12,5 +12,5 @@
 @import "tailwindcss";
 
 @import "./styles/tokens.css";
-@import "./styles/themes/minimax.css";
+@import "./styles/themes/figma.css";
 @import "./styles/components.css";
