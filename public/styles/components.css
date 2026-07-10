@@ -762,3 +762,244 @@
     background-color: rgba(139, 92, 246, 0.30);
     color: rgb(221, 214, 254);
   }
+  /* ============================================================
+   * VISTA CARDS — versión final por feedback del usuario
+   *
+   * Reglas:
+   * - Cards CONTENIDAS (max-width 768px), no se expanden al 100% de la app
+   * - Iconos DENTRO de un círculo (border-radius: 50%)
+   * - Botones de acción son icon-only circulares (sin texto)
+   * - Sin border-l coloreado (solo border sutil genérico)
+   * - "Más usados" = grid de 4 cards pequeñas (icono + nombre)
+   * - "Recientes" = lista vertical de 8 filas (icono + nombre + meta)
+   * - Solo se muestra en la raíz (Mi unidad)
+   * ============================================================ */
+
+  .cards-section {
+    max-width: 768px;
+    margin: 0 auto 32px;
+    padding: 0 16px;
+  }
+  .cards-section__heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    letter-spacing: 0;
+  }
+  .cards-section__heading svg {
+    width: 14px;
+    height: 14px;
+    color: var(--color-icon-folder);
+  }
+
+  /* ----- Hero card (Mi unidad, ancho contenido con max-width) ----- */
+  .hero-card {
+    max-width: 768px;
+    margin: 32px auto 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    min-height: 120px;
+    background-color: var(--color-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    transition: border-color 150ms;
+  }
+  .hero-card:hover { border-color: var(--color-text-muted); }
+  .hero-card__icon {
+    width: 56px;
+    height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-surface);
+    border-radius: 50%;
+    flex-shrink: 0;
+    color: var(--color-text-secondary);
+  }
+  .hero-card__title-block { flex: 1; min-width: 0; }
+  .hero-card__name {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+  .hero-card__path {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .hero-card__bar-wrap { flex: 1.5; min-width: 200px; }
+  .hero-card__bar-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .hero-card__bar-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+  }
+  .hero-card__bar-value {
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+  .hero-card__bar {
+    height: 6px;
+    background-color: var(--color-border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .hero-card__bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, rgb(139, 92, 246), rgb(96, 165, 250));
+    border-radius: 4px;
+    transition: width 300ms ease;
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
+  }
+
+  /* ----- "Más usados" — grid pequeño de mini cards ----- */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+  }
+  .mini-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 12px;
+    background-color: var(--color-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: border-color 150ms, background-color 150ms;
+  }
+  .mini-card:hover {
+    border-color: var(--color-text-muted);
+    background-color: var(--color-surface);
+  }
+  .mini-card__icon {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-surface);
+    border-radius: 50%;
+    flex-shrink: 0;
+    color: var(--color-text-secondary);
+  }
+  .mini-card__icon[data-color='folder']    { color: var(--color-icon-folder); }
+  .mini-card__icon[data-color='document']  { color: var(--color-icon-document); }
+  .mini-card__icon[data-color='office']    { color: var(--color-icon-office); }
+  .mini-card__icon[data-color='code']      { color: var(--color-icon-code); }
+  .mini-card__icon[data-color='media']     { color: var(--color-icon-media); }
+  .mini-card__icon[data-color='video']     { color: var(--color-icon-video); }
+  .mini-card__icon[data-color='audio']     { color: var(--color-icon-audio); }
+  .mini-card__icon[data-color='archive']   { color: var(--color-icon-archive); }
+  .mini-card__icon[data-color='exe']       { color: var(--color-icon-exe); }
+  .mini-card__name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text);
+    text-align: center;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ----- "Recientes" — lista vertical ----- */
+  .recent-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background-color: var(--color-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 8px;
+  }
+  .recent-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 150ms;
+  }
+  .recent-row:hover { background-color: var(--color-surface); }
+  .recent-row__icon {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-surface);
+    border-radius: 50%;
+    flex-shrink: 0;
+    color: var(--color-text-secondary);
+  }
+  .recent-row__icon[data-color='folder']    { color: var(--color-icon-folder); }
+  .recent-row__icon[data-color='document']  { color: var(--color-icon-document); }
+  .recent-row__icon[data-color='office']    { color: var(--color-icon-office); }
+  .recent-row__icon[data-color='code']      { color: var(--color-icon-code); }
+  .recent-row__icon[data-color='media']     { color: var(--color-icon-media); }
+  .recent-row__icon[data-color='video']     { color: var(--color-icon-video); }
+  .recent-row__icon[data-color='audio']     { color: var(--color-icon-audio); }
+  .recent-row__icon[data-color='archive']   { color: var(--color-icon-archive); }
+  .recent-row__icon[data-color='exe']       { color: var(--color-icon-exe); }
+  .recent-row__name {
+    flex: 1;
+    font-size: 13px;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .recent-row__meta {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+  }
+
+  /* ----- Botón circular icon-only (reemplaza .file-card__action) ----- */
+  .btn-icon {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 150ms, border-color 150ms;
+  }
+  .btn-icon:hover {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    border-color: var(--color-text-muted);
+  }
+  /* Estilo "primary" (cuando se necesita destacar, ej. acción principal en un row) */
+  .btn-icon--primary {
+    background-color: rgba(139, 92, 246, 0.20);
+    color: rgb(196, 181, 253);
+    border-color: rgba(139, 92, 246, 0.30);
+  }
+  .btn-icon--primary:hover {
+    background-color: rgba(139, 92, 246, 0.30);
+    color: rgb(221, 214, 254);
+  }

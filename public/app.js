@@ -363,20 +363,19 @@
     sorted.forEach(item => appendRow(item));
   }
 
-  // Vista CARDS: hero (con barra de disco) + grid de cards.
-  // Validado en docs/preview/themes-preview.html antes de implementar.
+  // Vista CARDS: hero (con barra de disco) + "Más usados" (top 4) + "Recientes" (lista).
+  // Diseñada para ser CONTENIDA (max-width 1024px) — no se expande al ancho de la app.
+  // Solo se muestra en la raíz (Mi unidad). El botón Listar fuerza la navegación
+  // si está activada desde una subcarpeta.
   function renderCards(sorted) {
-    // Hero card SOLO en la raíz (Mi unidad). Muestra barra de uso de disco.
-    if (state.currentDir && state.currentDir === state.driveRoot) {
+    // 1. Hero card (solo en la raíz)
+    if (state.currentDir === state.driveRoot) {
       const hero = document.createElement('article');
       hero.className = 'hero-card';
-      hero.dataset.color = 'folder';
-      hero.dataset.type = 'folder';
 
       const icon = document.createElement('div');
       icon.className = 'hero-card__icon';
-      icon.dataset.color = 'folder';
-      icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="12" x2="2" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" y1="16" x2="6.01" y2="16"/><line x1="10" y1="16" x2="10.01" y2="16"/></svg>';
+      icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="12" x2="2" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" y1="16" x2="6.01" y2="16"/><line x1="10" y1="16" x2="10.01" y2="16"/></svg>';
       hero.appendChild(icon);
 
       const title = document.createElement('div');
@@ -417,8 +416,6 @@
       if (state.diskInfo && state.diskInfo.total > 0) {
         const pct = Math.round((state.diskInfo.used / state.diskInfo.total) * 100);
         fill.style.width = pct + '%';
-        if (pct >= 90) fill.dataset.level = 'danger';
-        else if (pct >= 70) fill.dataset.level = 'warning';
       } else {
         fill.style.width = '0%';
       }
@@ -428,122 +425,128 @@
       hero.appendChild(barWrap);
 
       const open = document.createElement('button');
-      open.className = 'hero-card__action';
-      open.textContent = 'Abrir';
+      open.className = 'btn-icon';
+      open.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17l10-10"/><path d="M17 7H7"/><path d="M17 7v10"/></svg>';
+      open.title = 'Ver detalles de Mi unidad';
       hero.appendChild(open);
-
-      hero.addEventListener('click', (e) => {
-        if (e.target.closest('button')) return;
-        // Ya estamos en la raíz, no navegar
-      });
 
       els.fileList.appendChild(hero);
     }
 
-    // Grid de cards: muestra los archivos en formato card.
-    // Orden por mtime desc, limit 12 para performance (preview mostraba top 4 + el resto;
-    // acá mostramos todos pero cap a 12, puedes ajustarlo).
-    const itemsToShow = sorted.slice(0, 12);
-    itemsToShow.forEach(item => appendCard(item));
-  }
+    // 2. Sección "Más usados" — grid pequeño (top 4) con cards contenidas
+    // Solo en la raíz. En subcarpetas no se renderiza (cards-solo-en-raíz).
+    if (state.currentDir === state.driveRoot) {
+      const sectionM = document.createElement('section');
+      sectionM.className = 'cards-section';
+      const headingM = document.createElement('h3');
+      headingM.className = 'cards-section__heading';
+      headingM.innerHTML = '★ <span>Más usados</span>';
+      sectionM.appendChild(headingM);
 
-  function appendCard(item) {
-    const fileColor = getFileColor(item);
-    const fileType = getFileType(item);
-    const card = document.createElement('article');
-    card.className = 'file-card';
-    card.dataset.color = fileColor;
-    card.dataset.type = fileType;
-    card.dataset.path = item.path;
+      const grid = document.createElement('div');
+      grid.className = 'cards-grid';
+      const topFiles = sorted.filter(it => !it.isDir).slice(0, 4);
+      topFiles.forEach(item => {
+        const fileColor = getFileColor(item);
+        const fileType = getFileType(item);
+        const card = document.createElement('article');
+        card.className = 'mini-card';
+        card.dataset.color = fileColor;
 
-    const head = document.createElement('div');
-    head.className = 'file-card__head';
+        const icon = document.createElement('div');
+        icon.className = 'mini-card__icon';
+        icon.dataset.color = fileColor;
+        icon.innerHTML = cardIconSvg(fileColor);
+        card.appendChild(icon);
 
-    const icon = document.createElement('div');
-    icon.className = 'file-card__icon';
-    icon.dataset.color = fileColor;
-    icon.innerHTML = cardIconSvg(fileColor);
-    head.appendChild(icon);
+        const name = document.createElement('div');
+        name.className = 'mini-card__name';
+        name.textContent = item.name;
+        name.title = item.name;
+        card.appendChild(name);
 
-    const title = document.createElement('div');
-    title.className = 'file-card__title-block';
-    const name = document.createElement('div');
-    name.className = 'file-card__name';
-    name.textContent = item.name;
-    title.appendChild(name);
-    const typeLabel = document.createElement('div');
-    typeLabel.className = 'file-card__type';
-    typeLabel.textContent = item.isDir ? 'Carpeta' : (TYPE_META[fileType] ? TYPE_META[fileType].label : TYPE_META.default.label);
-    title.appendChild(typeLabel);
-    head.appendChild(title);
-    card.appendChild(head);
+        card.addEventListener('click', () => {
+          if (item.isDir) navigate(item.path);
+          else window.driveman.fs.openFile(item.path).catch(err => toast(err.message, 'error'));
+        });
 
-    const divider = document.createElement('div');
-    divider.className = 'file-card__divider';
-    card.appendChild(divider);
+        grid.appendChild(card);
+      });
+      sectionM.appendChild(grid);
+      els.fileList.appendChild(sectionM);
+    }
 
-    const meta = document.createElement('div');
-    meta.className = 'file-card__meta';
-    const sizeCell = document.createElement('div');
-    sizeCell.className = 'file-card__meta-cell';
-    const sizeLabel = document.createElement('div');
-    sizeLabel.className = 'file-card__meta-label';
-    sizeLabel.textContent = item.isDir ? 'Items' : 'Tamaño';
-    sizeCell.appendChild(sizeLabel);
-    const sizeValue = document.createElement('div');
-    sizeValue.className = 'file-card__meta-value';
-    sizeValue.textContent = item.isDir ? '—' : formatSize(item.size);
-    sizeCell.appendChild(sizeValue);
-    meta.appendChild(sizeCell);
+    // 3. Sección "Recientes" — lista contenida con los últimos 8 archivos
+    if (state.currentDir === state.driveRoot) {
+      const sectionR = document.createElement('section');
+      sectionR.className = 'cards-section';
+      const headingR = document.createElement('h3');
+      headingR.className = 'cards-section__heading';
+      headingR.innerHTML = '🕘 <span>Recientes</span>';
+      sectionR.appendChild(headingR);
 
-    const mtimeCell = document.createElement('div');
-    mtimeCell.className = 'file-card__meta-cell';
-    const mtimeLabel = document.createElement('div');
-    mtimeLabel.className = 'file-card__meta-label';
-    mtimeLabel.textContent = 'Modificado';
-    mtimeCell.appendChild(mtimeLabel);
-    const mtimeValue = document.createElement('div');
-    mtimeValue.className = 'file-card__meta-value';
-    mtimeValue.textContent = formatDate(item.mtime);
-    mtimeCell.appendChild(mtimeValue);
-    meta.appendChild(mtimeCell);
-    card.appendChild(meta);
+      const recentList = document.createElement('div');
+      recentList.className = 'recent-list';
+      const recentItems = sorted.filter(it => !it.isDir).slice(0, 8);
+      recentItems.forEach(item => {
+        const fileColor = getFileColor(item);
+        const fileType = getFileType(item);
+        const row = document.createElement('div');
+        row.className = 'recent-row';
+        row.dataset.color = fileColor;
 
-    const actions = document.createElement('div');
-    actions.className = 'file-card__actions';
-    const open = document.createElement('button');
-    open.className = 'file-card__action file-card__action--primary';
-    open.textContent = 'Abrir';
-    open.onclick = (e) => { e.stopPropagation(); if (item.isDir) navigate(item.path); else window.driveman.fs.openFile(item.path).catch(err => toast(err.message, 'error')); };
-    actions.appendChild(open);
-    const copy = document.createElement('button');
-    copy.className = 'file-card__action';
-    copy.textContent = 'Copiar ruta';
-    copy.onclick = (e) => { e.stopPropagation(); copyPath(item); };
-    actions.appendChild(copy);
-    card.appendChild(actions);
+        const icon = document.createElement('div');
+        icon.className = 'recent-row__icon';
+        icon.dataset.color = fileColor;
+        icon.innerHTML = cardIconSvg(fileColor);
+        row.appendChild(icon);
 
-    // Click en la card (no en un botón) abre el item
-    card.addEventListener('click', () => {
-      if (item.isDir) navigate(item.path);
-      else window.driveman.fs.openFile(item.path).catch(err => toast(err.message, 'error'));
-    });
+        const name = document.createElement('div');
+        name.className = 'recent-row__name';
+        name.textContent = item.name;
+        name.title = item.name;
+        row.appendChild(name);
 
-    els.fileList.appendChild(card);
+        const meta = document.createElement('div');
+        meta.className = 'recent-row__meta';
+        meta.textContent = formatDate(item.mtime);
+        row.appendChild(meta);
+
+        const open = document.createElement('button');
+        open.className = 'btn-icon';
+        open.title = 'Abrir';
+        open.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17l10-10"/><path d="M17 7H7"/><path d="M17 7v10"/></svg>';
+        open.onclick = (e) => {
+          e.stopPropagation();
+          if (item.isDir) navigate(item.path);
+          else window.driveman.fs.openFile(item.path).catch(err => toast(err.message, 'error'));
+        };
+        row.appendChild(open);
+
+        row.addEventListener('click', () => {
+          if (item.isDir) navigate(item.path);
+          else window.driveman.fs.openFile(item.path).catch(err => toast(err.message, 'error'));
+        });
+
+        recentList.appendChild(row);
+      });
+      sectionR.appendChild(recentList);
+      els.fileList.appendChild(sectionR);
+    }
   }
 
   // Retorna el SVG según el file color (Figma-style icons).
   function cardIconSvg(fileColor) {
-    const COMMON_SVG_HEAD = 'xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"';
+    const COMMON_SVG_HEAD = 'xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"';
     const PATHS = {
       folder:    '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
       document:  '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>',
       office:    '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="12" y1="13" x2="12" y2="21"/>',
       code:      '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m10 13-1.5 1.5 1.5 1.5"/><path d="m14 13 1.5 1.5-1.5 1.5"/>',
       media:     '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m10 11 5 3-5 3v-6Z"/>',
-      audio:     '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M10 11 5 6 5 8 3 8 3 16 5 16 5 18 10 13"/>',
+      audio:     '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><circle cx="12" cy="14" r="2"/>',
       archive:   '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><rect x="8" y="12" width="8" height="8" rx="1"/>',
-      exe:       '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><circle cx="12" cy="14" r="2"/>',
+      exe:       '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><polygon points="9,11 15,12 9,13"/>',
       video:     '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m10 11 5 3-5 3v-6Z"/>',
       default:   '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/>'
     };
